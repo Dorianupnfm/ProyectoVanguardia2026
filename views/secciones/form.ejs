@@ -1,0 +1,44 @@
+<% locals.paginaActual = 'secciones' %>
+<%- include('../partials/layout_inicio') %><%- include('../partials/mensajes') %>
+<div class="page-header"><h1 class="page-titulo"><%= titulo %></h1><a href="/secciones" class="btn btn-outline">← Volver</a></div>
+<% var accion = esEditar ? '/secciones/' + seccion._id : '/secciones' %>
+<form action="<%= accion %>" method="POST">
+  <div class="form-card">
+    <div class="form-seccion-titulo">Datos de la Sección</div>
+    <div class="form-grid">
+      <div class="campo"><label>Nombre de Sección *</label><input type="text" name="nombre" value="<%= seccion.nombre||'' %>" placeholder="Ej: A" required></div>
+      <div class="campo"><label>Grado *</label>
+        <select name="grado" required>
+          <option value="">Seleccionar grado</option>
+          <% grados.forEach(g => { %>
+          <option value="<%= g._id %>" <%= seccion.grado?._id?.toString()===g._id.toString()?'selected':'' %>><%= g.nombre %> (<%= g.anioEscolar %>)</option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="campo"><label>Docente Tutor</label>
+        <select name="docente">
+          <option value="">Sin tutor asignado</option>
+          <% docentes.forEach(d => { %>
+          <option value="<%= d._id %>" <%= seccion.docente?._id?.toString()===d._id.toString()?'selected':'' %>><%= d.apellido %>, <%= d.nombre %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="campo"><label>Jornada</label>
+        <select name="jornada">
+          <option value="matutina" <%= (seccion.jornada||'matutina')==='matutina'?'selected':'' %>>Matutina</option>
+          <option value="vespertina" <%= seccion.jornada==='vespertina'?'selected':'' %>>Vespertina</option>
+          <option value="nocturna" <%= seccion.jornada==='nocturna'?'selected':'' %>>Nocturna</option>
+        </select>
+      </div>
+      <div class="campo"><label>Capacidad</label><input type="number" name="capacidad" value="<%= seccion.capacidad||40 %>" min="1" max="100"></div>
+      <div class="campo"><label>Estado</label>
+        <select name="estado">
+          <option value="activa" <%= (seccion.estado||'activa')==='activa'?'selected':'' %>>Activa</option>
+          <option value="inactiva" <%= seccion.estado==='inactiva'?'selected':'' %>>Inactiva</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="form-botones"><a href="/secciones" class="btn btn-outline">Cancelar</a><button type="submit" class="btn btn-primario"><%= esEditar?'Guardar':'Registrar' %></button></div>
+</form>
+<%- include('../partials/layout_fin') %>

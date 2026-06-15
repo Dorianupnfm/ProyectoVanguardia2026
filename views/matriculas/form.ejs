@@ -1,0 +1,83 @@
+<% locals.paginaActual = 'matriculas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <h1 class="page-titulo"><%= titulo %></h1>
+  <a href="/matriculas" class="btn btn-outline">← Volver</a>
+</div>
+
+<% var accion = esEditar ? '/matriculas/' + matricula._id : '/matriculas' %>
+<form action="<%= accion %>" method="POST">
+  <div class="form-card">
+    <div class="form-seccion-titulo">Datos de la Matrícula</div>
+    <div class="form-grid">
+
+      <% if (!esEditar) { %>
+      <div class="campo campo-ancho">
+        <label>Alumno *</label>
+        <select name="alumno" required>
+          <option value="">— Seleccionar alumno —</option>
+          <% alumnos.forEach(a => { %>
+          <option value="<%= a._id %>"><%= a.apellido %>, <%= a.nombre %> (<%= a.expediente %>)</option>
+          <% }) %>
+        </select>
+      </div>
+      <% } else { %>
+      <div class="campo campo-ancho">
+        <label>Alumno</label>
+        <input type="text" value="<%= matricula.alumno?.apellido %>, <%= matricula.alumno?.nombre %>" disabled class="input-dis">
+      </div>
+      <% } %>
+
+      <div class="campo">
+        <label>Sección *</label>
+        <select name="seccion" required>
+          <option value="">— Seleccionar sección —</option>
+          <% secciones.forEach(s => { %>
+          <option value="<%= s._id %>"
+            <%= matricula.seccion?._id?.toString()===s._id.toString()?'selected':'' %>>
+            Sec. <%= s.nombre %> — <%= s.grado?.nombre||'?' %>
+            <%= s.grado?.carrera?.nombre ? `(${s.grado.carrera.nombre})` : '' %>
+          </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label>Año Escolar</label>
+        <input type="number" name="anioEscolar"
+          value="<%= matricula.anioEscolar||new Date().getFullYear() %>" min="2000" max="2099">
+      </div>
+
+      <div class="campo">
+        <label>Fecha de Matrícula</label>
+        <input type="date" name="fechaMatricula"
+          value="<%= matricula.fechaMatricula ? new Date(matricula.fechaMatricula).toISOString().split('T')[0] : new Date().toISOString().split('T')[0] %>">
+      </div>
+
+      <div class="campo">
+        <label>Estado</label>
+        <select name="estado">
+          <option value="activa"     <%= (matricula.estado||'activa')==='activa'?'selected':'' %>>Activa</option>
+          <option value="anulada"    <%= matricula.estado==='anulada'?'selected':'' %>>Anulada</option>
+          <option value="trasladada" <%= matricula.estado==='trasladada'?'selected':'' %>>Trasladada</option>
+        </select>
+      </div>
+
+      <div class="campo campo-ancho">
+        <label>Observaciones</label>
+        <textarea name="observaciones" rows="2"><%= matricula.observaciones||'' %></textarea>
+      </div>
+
+    </div>
+  </div>
+  <div class="form-botones">
+    <a href="/matriculas" class="btn btn-outline">Cancelar</a>
+    <button type="submit" class="btn btn-primario">
+      <%= esEditar ? 'Guardar Cambios' : 'Registrar Matrícula' %>
+    </button>
+  </div>
+</form>
+
+<%- include('../partials/layout_fin') %>

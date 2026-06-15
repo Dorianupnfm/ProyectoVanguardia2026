@@ -1,0 +1,55 @@
+<% locals.paginaActual = 'alumnos' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Alumnos</h1>
+    <p class="page-sub"><%= alumnos.length %> registro(s)</p>
+  </div>
+  <a href="/alumnos/nuevo" class="btn btn-primario">+ Nuevo Alumno</a>
+</div>
+
+<form action="/alumnos" method="GET" class="form-busqueda">
+  <input type="text" name="q" value="<%= busqueda %>" placeholder="Buscar por nombre, apellido o expediente..." class="input-busqueda">
+  <button type="submit" class="btn btn-secundario">Buscar</button>
+  <% if (busqueda) { %><a href="/alumnos" class="btn btn-outline">Limpiar</a><% } %>
+</form>
+
+<% if (alumnos.length === 0) { %>
+<div class="vacio">
+  <div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+  <p>No se encontraron alumnos.</p>
+  <a href="/alumnos/nuevo" class="btn btn-primario">Registrar el primero</a>
+</div>
+<% } else { %>
+<div class="tabla-card">
+  <table class="tabla">
+    <thead><tr>
+      <th>Expediente</th><th>Nombre completo</th><th>Grado / Sección</th>
+      <th>Correo</th><th>Estado</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>
+    <% alumnos.forEach(a => { %>
+    <tr>
+      <td><code><%= a.expediente %></code></td>
+      <td><strong><%= a.apellido %>, <%= a.nombre %></strong></td>
+      <td><%= a.grado ? `${a.grado} — Sec. ${a.seccion}` : '<span class="txt-gris">Sin asignar</span>' %></td>
+      <td><%= a.correo || '—' %></td>
+      <td><span class="badge badge-<%= a.estado === 'activo' ? 'verde' : 'rojo' %>"><%= a.estado %></span></td>
+      <td class="acciones">
+        <a href="/alumnos/<%= a._id %>" class="btn btn-sm btn-outline">Ver</a>
+        <a href="/alumnos/<%= a._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+        <form action="/alumnos/<%= a._id %>/eliminar" method="POST" style="display:inline"
+              onsubmit="return confirm('¿Eliminar a <%= a.nombre %> <%= a.apellido %>?')">
+          <button type="submit" class="btn btn-sm btn-peligro">Eliminar</button>
+        </form>
+      </td>
+    </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<%- include('../partials/layout_fin') %>

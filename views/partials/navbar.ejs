@@ -1,0 +1,20 @@
+<%# views/partials/navbar.ejs — barra de navegación %>
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span class="navbar-logo"></span>
+    <span class="navbar-title">SoftWork</span>
+  </div>
+
+  <ul class="navbar-menu">
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/alumnos">Alumnos</a></li>
+    <li><a href="/docentes">Docentes</a></li>
+  </ul>
+
+  <div class="navbar-user">
+    <% if (usuarioActual) { %>
+      <span class="navbar-nombre"> <%= usuarioActual.nombre %></span>
+      <a href="/auth/logout" class="btn btn-outline btn-sm">Cerrar sesión</a>
+    <% } %>
+  </div>
+</nav>

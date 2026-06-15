@@ -1,0 +1,39 @@
+<% locals.paginaActual = 'asistencia-historial' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Historial de Asistencia</h1><p class="page-sub"><%= registros.length %> sesiones registradas</p></div>
+  <a href="/asistencia/nueva" class="btn btn-primario">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Nueva sesión
+  </a>
+</div>
+<% if (!registros.length) { %>
+<div class="vacio"><div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><p>Sin registros de asistencia todavía.</p></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Fecha</th><th>Asignatura</th><th>Sección</th><th>Presentes</th><th>Ausentes</th><th>Tema</th><th>Acciones</th></tr></thead>
+  <tbody>
+  <% registros.forEach(function(r) { %>
+  <%
+    var pres = r.detalle.filter(function(d){ return d.estado==='presente'||d.estado==='tarde'; }).length;
+    var aus  = r.detalle.filter(function(d){ return d.estado==='ausente'; }).length;
+    var total = r.detalle.length;
+  %>
+  <tr>
+    <td><strong><%= new Date(r.fecha).toLocaleDateString('es-HN') %></strong></td>
+    <td><%= r.asignatura ? r.asignatura.nombre : '—' %></td>
+    <td>Sección <%= r.seccion ? r.seccion.nombre : '—' %></td>
+    <td><span class="badge badge-verde"><%= pres %>/<%= total %></span></td>
+    <td><% if(aus > 0){ %><span class="badge badge-rojo"><%= aus %></span><% } else { %><span class="badge badge-verde">0</span><% } %></td>
+    <td style="font-size:12px;color:var(--gray-500)"><%= r.tema||'—' %></td>
+    <td class="acciones">
+      <a href="/asistencia/ver/<%= r._id %>" class="btn btn-sm btn-outline">Ver</a>
+      <a href="/asistencia/lista?asignaturaId=<%= r.asignatura ? r.asignatura._id : '' %>&seccionId=<%= r.seccion ? r.seccion._id : '' %>&fecha=<%= new Date(r.fecha).toISOString().split('T')[0] %>" class="btn btn-sm btn-secundario">Editar</a>
+    </td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

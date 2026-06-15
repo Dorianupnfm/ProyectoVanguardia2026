@@ -1,0 +1,52 @@
+<% locals.paginaActual = 'reportes' %>
+<%- include('../partials/layout_inicio') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Boleta — <%= parcial.nombre %></h1><p class="page-sub"><%= cfg.inst_nombre %></p></div>
+  <div class="page-acciones">
+    <button onclick="window.print()" class="btn btn-primario">Imprimir</button>
+    <a href="/reportes/boleta" class="btn btn-outline">Nueva boleta</a>
+  </div>
+</div>
+<div class="detalle-card" style="margin-bottom:20px">
+  <div class="detalle-header">
+    <div class="detalle-avatar"><%= alumno.nombre[0] %><%= alumno.apellido[0] %></div>
+    <div>
+      <h2 class="detalle-nombre"><%= alumno.apellido %>, <%= alumno.nombre %></h2>
+      <div class="detalle-sub">
+        <code><%= alumno.expediente %></code> &nbsp;
+        <% if (matricula) { %>Sección <%= matricula.seccion.nombre %> &mdash; <%= matricula.seccion.grado.nombre %><% } %>
+      </div>
+    </div>
+    <div style="margin-left:auto;text-align:right;color:rgba(255,255,255,.8)">
+      <div style="font-size:11px">Año Lectivo</div>
+      <div style="font-size:20px;font-weight:800"><%= anioEsc %></div>
+    </div>
+  </div>
+  <div style="padding:20px">
+  <% if (!datos.length) { %>
+  <p style="color:var(--gray-400);text-align:center;padding:20px">Sin notas registradas para este parcial.</p>
+  <% } else { %>
+  <table class="tabla">
+    <thead><tr><th>Asignatura</th><th style="text-align:center">Puntos</th><th style="text-align:center">Máximo</th><th style="text-align:center">%</th><th style="text-align:center">Estado</th></tr></thead>
+    <tbody>
+    <% datos.forEach(function(d) { %>
+    <tr>
+      <td><strong><%= d.asignatura.nombre %></strong></td>
+      <td style="text-align:center"><%= d.total %></td>
+      <td style="text-align:center"><%= d.posible %></td>
+      <td style="text-align:center;font-weight:700"><%= d.pct !== null ? d.pct+'%' : '—' %></td>
+      <td style="text-align:center">
+        <% if (d.pct !== null) { %>
+        <span class="badge badge-<%= d.pct >= notaMinima ? 'verde' : 'rojo' %>">
+          <%= d.pct >= notaMinima ? 'Aprobado' : 'Reprobado' %>
+        </span>
+        <% } else { %><span class="badge badge-gris">Sin notas</span><% } %>
+      </td>
+    </tr>
+    <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+  </div>
+</div>
+<%- include('../partials/layout_fin') %>

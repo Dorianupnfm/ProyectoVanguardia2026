@@ -1,0 +1,155 @@
+<% locals.paginaActual = 'grados' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <h1 class="page-titulo"><%= titulo %></h1>
+  <a href="/grados" class="btn btn-outline">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Volver
+  </a>
+</div>
+
+<% var accion = esEditar ? '/grados/' + grado._id : '/grados' %>
+
+<div style="max-width:560px">
+  <form action="<%= accion %>" method="POST" id="frmGrado">
+    <div class="form-card">
+      <div class="form-seccion-titulo">Datos del Grado</div>
+      <div class="form-grid">
+
+        <div class="campo">
+          <label>Número de Grado <span class="req">*</span></label>
+          <select name="nombre" id="selNombre" onchange="detectarNivel(this.value)" required>
+            <option value="">Seleccionar...</option>
+            <optgroup label="Ciclo Básico (Plan común)">
+              <option value="7° Grado" <%= (grado.nombre||'')==='7° Grado'?'selected':'' %>>7° Grado</option>
+              <option value="8° Grado" <%= (grado.nombre||'')==='8° Grado'?'selected':'' %>>8° Grado</option>
+              <option value="9° Grado" <%= (grado.nombre||'')==='9° Grado'?'selected':'' %>>9° Grado</option>
+            </optgroup>
+            <optgroup label="Bachillerato (El alumno elige carrera)">
+              <option value="10° Grado" <%= (grado.nombre||'')==='10° Grado'?'selected':'' %>>10° Grado</option>
+              <option value="11° Grado" <%= (grado.nombre||'')==='11° Grado'?'selected':'' %>>11° Grado</option>
+              <option value="12° Grado" <%= (grado.nombre||'')==='12° Grado'?'selected':'' %>>12° Grado</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Año Escolar <span class="req">*</span></label>
+          <input type="number" name="anioEscolar"
+                 value="<%= grado.anioEscolar||new Date().getFullYear() %>"
+                 min="2000" max="2099" required>
+        </div>
+
+        <!-- Indicador de nivel (solo lectura) -->
+        <div class="campo campo-ancho" id="bloqueNivel">
+          <label>Nivel Educativo</label>
+          <div id="indicadorNivel" class="nivel-indicador">
+            <% if (grado.nombre) { %>
+              <% var num = parseInt(grado.nombre); %>
+              <% if (!isNaN(num) && num <= 9) { %>
+              <div class="nivel-chip nivel-chip-basico">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                Ciclo Básico — Plan común obligatorio para todos
+              </div>
+              <% } else { %>
+              <div class="nivel-chip nivel-chip-bach">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                Bachillerato — El alumno elige una carrera
+              </div>
+              <% } %>
+            <% } else { %>
+            <div class="nivel-chip nivel-chip-empty">Selecciona un grado para ver el nivel</div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Carrera — solo visible para Bachillerato -->
+        <div class="campo campo-ancho" id="bloqueCarrera"
+             style="<%= (grado.nivel === 'bachillerato') ? '' : 'display:none' %>">
+          <label>Carrera <span class="req">*</span></label>
+          <select name="carrera" id="selCarrera">
+            <option value="">Seleccionar carrera...</option>
+            <% carreras.forEach(function(c) { %>
+            <option value="<%= c._id %>"
+              <%= grado.carrera && grado.carrera._id && grado.carrera._id.toString()===c._id.toString() ? 'selected' : '' %>>
+              <%= c.nombre %>
+              <% if(c.codigo){ %> (<%= c.codigo %>)<% } %>
+            </option>
+            <% }) %>
+          </select>
+          <span class="campo-hint">Solo los grados de Bachillerato llevan carrera asignada</span>
+        </div>
+
+        <div class="campo">
+          <label>Estado</label>
+          <select name="estado">
+            <option value="activo"   <%= (grado.estado||'activo')==='activo'   ?'selected':'' %>>Activo</option>
+            <option value="inactivo" <%= grado.estado==='inactivo'?'selected':'' %>>Inactivo</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="form-botones">
+      <a href="/grados" class="btn btn-secundario">Cancelar</a>
+      <button type="submit" class="btn btn-primario">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13"/></svg>
+        <%= esEditar ? 'Guardar Cambios' : 'Registrar Grado' %>
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+.nivel-indicador { margin-top: 2px; }
+.nivel-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: var(--radius);
+  font-size: 13.5px; font-weight: 500;
+}
+.nivel-chip svg { width: 16px; height: 16px; stroke: currentColor; flex-shrink: 0; }
+.nivel-chip-basico { background: var(--primary-bg); color: var(--primary-d); border: 1px solid var(--primary-cl); }
+.nivel-chip-bach   { background: var(--purple-cl);  color: var(--purple);    border: 1px solid #c4b5fd; }
+.nivel-chip-empty  { background: var(--gray-100);   color: var(--gray-500);  border: 1px solid var(--gray-200); font-style: italic; }
+</style>
+
+<script>
+function detectarNivel(valor) {
+  var bloque   = document.getElementById('bloqueCarrera');
+  var indic    = document.getElementById('indicadorNivel');
+  var selCarr  = document.getElementById('selCarrera');
+  var num      = parseInt(valor);
+  var esBasico = !isNaN(num) && num <= 9;
+
+  if (!valor) {
+    indic.innerHTML = '<div class="nivel-chip nivel-chip-empty">Selecciona un grado para ver el nivel</div>';
+    bloque.style.display = 'none';
+    return;
+  }
+
+  if (esBasico) {
+    indic.innerHTML = '<div class="nivel-chip nivel-chip-basico">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>' +
+      'Ciclo Básico — Plan común obligatorio para todos</div>';
+    bloque.style.display = 'none';
+    selCarr.value = '';
+    selCarr.removeAttribute('required');
+  } else {
+    indic.innerHTML = '<div class="nivel-chip nivel-chip-bach">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>' +
+      'Bachillerato — El alumno elige una carrera</div>';
+    bloque.style.display = 'block';
+    selCarr.setAttribute('required', 'required');
+  }
+}
+// Inicializar si ya hay valor
+window.addEventListener('DOMContentLoaded', function() {
+  var sel = document.getElementById('selNombre');
+  if (sel.value) detectarNivel(sel.value);
+});
+</script>
+
+<%- include('../partials/layout_fin') %>

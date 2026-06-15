@@ -1,0 +1,39 @@
+<% locals.paginaActual = 'docentes' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Docentes</h1><p class="page-sub"><%= docentes.length %> registro(s)</p></div>
+  <a href="/docentes/nuevo" class="btn btn-primario">+ Nuevo Docente</a>
+</div>
+<form action="/docentes" method="GET" class="form-busqueda">
+  <input type="text" name="q" value="<%= busqueda %>" placeholder="Buscar por nombre o especialidad..." class="input-busqueda">
+  <button type="submit" class="btn btn-secundario">Buscar</button>
+  <% if (busqueda) { %><a href="/docentes" class="btn btn-outline">Limpiar</a><% } %>
+</form>
+<% if (docentes.length === 0) { %>
+<div class="vacio"><div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><p>No se encontraron docentes.</p><a href="/docentes/nuevo" class="btn btn-primario">Registrar el primero</a></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Nombre completo</th><th>Especialidad</th><th>Correo</th><th>Teléfono</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+  <% docentes.forEach(d => { %>
+  <tr>
+    <td><strong><%= d.apellido %>, <%= d.nombre %></strong></td>
+    <td><%= d.especialidad||'—' %></td>
+    <td><%= d.correo||'—' %></td>
+    <td><%= d.telefono||'—' %></td>
+    <td><span class="badge badge-<%= d.estado==='activo'?'verde':'rojo' %>"><%= d.estado %></span></td>
+    <td class="acciones">
+      <a href="/docentes/<%= d._id %>" class="btn btn-sm btn-outline">Ver</a>
+      <a href="/docentes/<%= d._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+      <form action="/docentes/<%= d._id %>/eliminar" method="POST" style="display:inline"
+            onsubmit="return confirm('¿Eliminar al docente?')">
+        <button type="submit" class="btn btn-sm btn-peligro">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

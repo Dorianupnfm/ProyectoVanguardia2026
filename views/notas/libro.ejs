@@ -1,0 +1,189 @@
+<% locals.paginaActual = 'notas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<%
+var qs = '?asignaturaId=' + asignatura._id + '&seccionId=' + seccion._id + '&parcialId=' + parcial._id;
+%>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Libro de Notas</h1>
+    <p class="page-sub">
+      <strong><%= asignatura.nombre %></strong> &mdash;
+      Sección <%= seccion.nombre %> &mdash;
+      <%= parcial.nombre %> (<%= parcial.anioEscolar %>)
+    </p>
+  </div>
+  <a href="/notas" class="btn btn-outline">Cambiar selección</a>
+</div>
+
+<!-- Agregar actividad -->
+<div class="form-card" style="margin-bottom:16px">
+  <div class="form-seccion-titulo">Nueva Actividad Evaluativa</div>
+  <form action="/notas/actividad/nueva" method="POST">
+    <input type="hidden" name="asignaturaId" value="<%= asignatura._id %>">
+    <input type="hidden" name="seccionId"    value="<%= seccion._id %>">
+    <input type="hidden" name="parcialId"    value="<%= parcial._id %>">
+    <div class="form-grid">
+      <div class="campo">
+        <label>Nombre de la actividad <span class="req">*</span></label>
+        <input type="text" name="nombre" placeholder="Ej: Prueba 1, Tarea 2..." required>
+      </div>
+      <div class="campo">
+        <label>Componente <span class="req">*</span></label>
+        <select name="componente" required>
+          <% COMPONENTES.forEach(function(c) { %>
+          <option value="<%= c %>"><%= c %> — <%= COMPONENTE_NOMBRES[c] %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Puntaje máximo <span class="req">*</span></label>
+        <input type="number" name="puntajeMax" value="10" min="1" max="100" required>
+      </div>
+      <div class="campo">
+        <label>Fecha</label>
+        <input type="date" name="fecha" value="<%= new Date().toISOString().split('T')[0] %>">
+      </div>
+    </div>
+    <div class="form-botones"><button type="submit" class="btn btn-primario">Agregar Actividad</button></div>
+  </form>
+</div>
+
+<% if (!actividades.length) { %>
+<div class="vacio">
+  <div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+  <div class="vacio-titulo">Sin actividades para este parcial</div>
+  <p>Agrega actividades evaluativas para comenzar a registrar notas.</p>
+</div>
+<% } else { %>
+
+<!-- Tabla de notas -->
+<form action="/notas/guardar" method="POST">
+  <input type="hidden" name="asignaturaId" value="<%= asignatura._id %>">
+  <input type="hidden" name="seccionId"    value="<%= seccion._id %>">
+  <input type="hidden" name="parcialId"    value="<%= parcial._id %>">
+
+  <div class="tabla-card" style="overflow-x:auto;margin-bottom:80px">
+    <div class="tabla-card-header">
+      <span class="tabla-card-titulo">Calificaciones — <%= matriculas.length %> alumno(s)</span>
+      <div style="display:flex;gap:8px">
+        <% actividades.forEach(function(act) { %>
+        <form action="/notas/actividad/<%= act._id %>/eliminar" method="POST" style="display:inline"
+              onsubmit="return confirm('¿Eliminar actividad <%= act.nombre %>?')">
+          <input type="hidden" name="asignaturaId" value="<%= asignatura._id %>">
+          <input type="hidden" name="seccionId"    value="<%= seccion._id %>">
+          <input type="hidden" name="parcialId"    value="<%= parcial._id %>">
+          <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger);font-size:11px" title="Eliminar <%= act.nombre %>">
+            × <%= act.nombre %>
+          </button>
+        </form>
+        <% }) %>
+      </div>
+    </div>
+    <table class="tabla" style="min-width:700px">
+      <thead>
+        <tr>
+          <th style="min-width:160px">Alumno</th>
+          <% actividades.forEach(function(act) { %>
+          <th style="min-width:80px;text-align:center">
+            <div style="font-size:10px"><%= act.componente %></div>
+            <div><%= act.nombre %></div>
+            <div style="font-size:10px;color:rgba(255,255,255,.6)">/<%= act.puntajeMax %></div>
+          </th>
+          <% }) %>
+          <th style="min-width:80px;text-align:center">Total</th>
+          <th style="min-width:60px;text-align:center">%</th>
+          <th style="min-width:80px;text-align:center">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+      <% matriculas.forEach(function(m) { %>
+      <%
+        var aid = m.alumno._id.toString();
+        var res = resumen.find(function(r){ return r.alumno._id.toString()===aid; }) || {};
+      %>
+      <tr>
+        <td>
+          <div style="font-weight:600;font-size:13px"><%= m.alumno.apellido %>, <%= m.alumno.nombre %></div>
+          <div style="font-size:11px;color:var(--gray-400);font-family:var(--font-mono)"><%= m.alumno.expediente %></div>
+        </td>
+        <% actividades.forEach(function(act) { %>
+        <%
+          var nota = notasMap[aid] && notasMap[aid][act._id.toString()];
+          var val  = nota ? nota.nota : '';
+        %>
+        <td style="text-align:center;padding:6px">
+          <input type="number" name="nota_<%= aid %>_<%= act._id %>"
+                 value="<%= val %>"
+                 min="0" max="<%= act.puntajeMax %>"
+                 step="0.1"
+                 style="width:68px;text-align:center;padding:5px;border:1.5px solid var(--gray-300);border-radius:6px;font-size:13px"
+                 onchange="actualizarFila(this, '<%= aid %>')">
+        </td>
+        <% }) %>
+        <td style="text-align:center;font-weight:700;font-size:14px" id="total-<%= aid %>">
+          <%= res.total !== undefined ? res.total : '—' %>
+        </td>
+        <td style="text-align:center;font-family:var(--font-mono)" id="pct-<%= aid %>">
+          <%= res.pct !== null && res.pct !== undefined ? res.pct+'%' : '—' %>
+        </td>
+        <td style="text-align:center" id="est-<%= aid %>">
+          <% if (res.pct !== null && res.pct !== undefined) { %>
+          <span class="badge badge-<%= res.pct >= 60 ? 'verde' : 'rojo' %>">
+            <%= res.pct >= 60 ? 'Aprobado' : 'Reprobado' %>
+          </span>
+          <% } else { %>
+          <span class="badge badge-gris">—</span>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Barra guardar fija -->
+  <div class="asistencia-guardar">
+    <span style="font-size:13px;color:var(--gray-500)"><%= matriculas.length %> alumno(s) — <%= actividades.length %> actividad(es)</span>
+    <button type="submit" class="btn btn-primario" style="padding:11px 28px">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13"/></svg>
+      Guardar Notas
+    </button>
+  </div>
+</form>
+<% } %>
+
+<script>
+// Pre-calcular totales y puntajes máximos
+var actPuntajes = {
+  <% actividades.forEach(function(act) { %>'<%= act._id %>': <%= act.puntajeMax %>,<% }) %>
+};
+var actIds = [<% actividades.forEach(function(act,i) { %>'<%= act._id %>'<%= i<actividades.length-1?',':'' %><% }) %>];
+
+function actualizarFila(input, alumnoId) {
+  var total = 0, posible = 0;
+  actIds.forEach(function(aid) {
+    var inp = document.querySelector('[name="nota_' + alumnoId + '_' + aid + '"]');
+    var max = actPuntajes[aid] || 0;
+    posible += max;
+    if (inp && inp.value !== '') {
+      var v = parseFloat(inp.value);
+      if (v > max) { inp.value = max; v = max; }
+      if (v < 0)   { inp.value = 0;   v = 0; }
+      total += v;
+    }
+  });
+  var pct = posible > 0 ? Math.round(total / posible * 100) : null;
+  document.getElementById('total-' + alumnoId).textContent = total.toFixed(1);
+  document.getElementById('pct-'   + alumnoId).textContent = pct !== null ? pct + '%' : '—';
+  var estEl = document.getElementById('est-' + alumnoId);
+  if (pct !== null) {
+    estEl.innerHTML = '<span class="badge badge-' + (pct >= 60 ? 'verde' : 'rojo') + '">' +
+      (pct >= 60 ? 'Aprobado' : 'Reprobado') + '</span>';
+  }
+}
+</script>
+
+<%- include('../partials/layout_fin') %>

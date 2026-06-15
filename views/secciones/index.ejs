@@ -1,0 +1,32 @@
+<% locals.paginaActual = 'secciones' %>
+<%- include('../partials/layout_inicio') %><%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Secciones</h1><p class="page-sub"><%= secciones.length %> registro(s)</p></div>
+  <a href="/secciones/nuevo" class="btn btn-primario">+ Nueva Sección</a>
+</div>
+<% if (!secciones.length) { %>
+<div class="vacio"><div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><p>Sin secciones registradas.</p><a href="/secciones/nuevo" class="btn btn-primario">Registrar la primera</a></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Sección</th><th>Grado</th><th>Docente Tutor</th><th>Jornada</th><th>Cap.</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+  <% secciones.forEach(s => { %>
+  <tr>
+    <td><strong>Sec. <%= s.nombre %></strong></td>
+    <td><%= s.grado?.nombre||'—' %></td>
+    <td><%= s.docente ? `${s.docente.apellido}, ${s.docente.nombre}` : '—' %></td>
+    <td><span class="badge badge-azul"><%= s.jornada %></span></td>
+    <td><%= s.capacidad %></td>
+    <td><span class="badge badge-<%= s.estado==='activa'?'verde':'rojo' %>"><%= s.estado %></span></td>
+    <td class="acciones">
+      <a href="/secciones/<%= s._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+      <form action="/secciones/<%= s._id %>/eliminar" method="POST" style="display:inline" onsubmit="return confirm('¿Eliminar sección?')">
+        <button type="submit" class="btn btn-sm btn-peligro">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

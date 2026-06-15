@@ -1,0 +1,30 @@
+<% locals.paginaActual = 'carreras' %>
+<%- include('../partials/layout_inicio') %><%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Carreras</h1><p class="page-sub"><%= carreras.length %> registro(s)</p></div>
+  <a href="/carreras/nuevo" class="btn btn-primario">+ Nueva Carrera</a>
+</div>
+<% if (!carreras.length) { %>
+<div class="vacio"><div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><p>Sin carreras registradas.</p><a href="/carreras/nuevo" class="btn btn-primario">Registrar la primera</a></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Nombre</th><th>Código</th><th>Duración</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+  <% carreras.forEach(c => { %>
+  <tr>
+    <td><strong><%= c.nombre %></strong><% if(c.descripcion){%><br><small class="txt-gris"><%= c.descripcion %></small><%}%></td>
+    <td><code><%= c.codigo||'—' %></code></td>
+    <td><%= c.duracion %> año(s)</td>
+    <td><span class="badge badge-<%= c.estado==='activa'?'verde':'rojo' %>"><%= c.estado %></span></td>
+    <td class="acciones">
+      <a href="/carreras/<%= c._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+      <form action="/carreras/<%= c._id %>/eliminar" method="POST" style="display:inline" onsubmit="return confirm('¿Eliminar carrera?')">
+        <button type="submit" class="btn btn-sm btn-peligro">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

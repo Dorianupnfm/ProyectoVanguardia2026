@@ -1,0 +1,28 @@
+<% locals.paginaActual = 'mis-asignaturas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <h1 class="page-titulo">Mis Asignaturas</h1>
+</div>
+<% if (!asignaturas.length) { %>
+<div class="vacio">
+  <div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+  <p>No tienes asignaturas asignadas todavía.</p>
+</div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Asignatura</th><th>Código</th><th>Grado</th><th>Horas/Sem</th><th>Acción</th></tr></thead>
+  <tbody>
+  <% asignaturas.forEach(function(a) { %>
+  <tr>
+    <td><strong><%= a.nombre %></strong></td>
+    <td><code><%= a.codigo||'—' %></code></td>
+    <td><%= a.grado ? a.grado.nombre : '—' %></td>
+    <td><%= a.horasSemana %> hrs</td>
+    <td><a href="/asistencia/nueva?asignatura=<%= a._id %>" class="btn btn-sm btn-primario">Pasar asistencia</a></td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

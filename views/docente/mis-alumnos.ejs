@@ -1,0 +1,35 @@
+<% locals.paginaActual = 'mis-alumnos' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Mis Alumnos</h1><p class="page-sub"><%= matriculas.length %> alumno(s)</p></div>
+</div>
+<!-- Filtro por sección -->
+<form method="GET" class="form-busqueda" style="margin-bottom:18px">
+  <select name="seccion" onchange="this.form.submit()" style="padding:9px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius);font-size:14px">
+    <option value="">Todas mis secciones</option>
+    <% secciones.forEach(function(s) { %>
+    <option value="<%= s._id %>" <%= seccionActual===s._id.toString()?'selected':'' %>>
+      Sección <%= s.nombre %> — <%= s.grado ? s.grado.nombre : '' %>
+    </option>
+    <% }) %>
+  </select>
+</form>
+<% if (!matriculas.length) { %>
+<div class="vacio"><div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><p>Sin alumnos en esta sección.</p></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Expediente</th><th>Nombre</th><th>Sección</th><th>Contacto</th></tr></thead>
+  <tbody>
+  <% matriculas.forEach(function(m) { %>
+  <tr>
+    <td><code><%= m.alumno.expediente %></code></td>
+    <td><strong><%= m.alumno.apellido %>, <%= m.alumno.nombre %></strong></td>
+    <td>Sec. <%= m.seccion ? m.seccion.nombre : '—' %> — <%= m.seccion && m.seccion.grado ? m.seccion.grado.nombre : '' %></td>
+    <td style="font-size:12px;color:var(--gray-500)"><%= m.alumno.telefono||m.alumno.correo||'—' %></td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

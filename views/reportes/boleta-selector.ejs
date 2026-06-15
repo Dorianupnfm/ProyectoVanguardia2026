@@ -1,0 +1,25 @@
+<% locals.paginaActual = 'reportes' %>
+<%- include('../partials/layout_inicio') %>
+<div class="page-header"><h1 class="page-titulo">Boleta de Calificaciones</h1><a href="/reportes" class="btn btn-outline">Volver</a></div>
+<div class="form-card" style="max-width:540px">
+  <div class="form-seccion-titulo">Seleccionar Estudiante y Parcial</div>
+  <form action="/reportes/boleta" method="GET">
+    <div class="form-grid">
+      <div class="campo campo-ancho"><label>Estudiante <span class="req">*</span></label>
+        <select name="alumnoId" required>
+          <option value="">Seleccionar...</option>
+          <% alumnos.forEach(function(a) { %><option value="<%= a._id %>"><%= a.apellido %>, <%= a.nombre %> (<%= a.expediente %>)</option><% }) %>
+        </select>
+      </div>
+      <div class="campo"><label>Parcial <span class="req">*</span></label>
+        <select name="parcialId" required>
+          <option value="">Seleccionar...</option>
+          <% parciales.forEach(function(p) { %><option value="<%= p._id %>"><%= p.nombre %> (<%= p.anioEscolar %>)</option><% }) %>
+        </select>
+      </div>
+      <div class="campo"><label>Año</label><input type="number" name="anio" value="<%= anioEsc %>"></div>
+    </div>
+    <div class="form-botones"><button type="submit" class="btn btn-primario">Generar Boleta</button></div>
+  </form>
+</div>
+<%- include('../partials/layout_fin') %>

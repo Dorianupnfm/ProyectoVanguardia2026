@@ -1,0 +1,32 @@
+<% locals.paginaActual = 'asignaturas' %>
+<%- include('../partials/layout_inicio') %><%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Asignaturas</h1><p class="page-sub"><%= asignaturas.length %> registro(s)</p></div>
+  <a href="/asignaturas/nuevo" class="btn btn-primario">+ Nueva Asignatura</a>
+</div>
+<% if (!asignaturas.length) { %>
+<div class="vacio"><div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><p>Sin asignaturas registradas.</p><a href="/asignaturas/nuevo" class="btn btn-primario">Registrar la primera</a></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Nombre</th><th>Código</th><th>Grado</th><th>Docente</th><th>Hrs/Sem</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+  <% asignaturas.forEach(a => { %>
+  <tr>
+    <td><strong><%= a.nombre %></strong></td>
+    <td><code><%= a.codigo||'—' %></code></td>
+    <td><%= a.grado?.nombre||'—' %></td>
+    <td><%= a.docente ? `${a.docente.apellido}, ${a.docente.nombre}` : '—' %></td>
+    <td><%= a.horasSemana %></td>
+    <td><span class="badge badge-<%= a.estado==='activa'?'verde':'rojo' %>"><%= a.estado %></span></td>
+    <td class="acciones">
+      <a href="/asignaturas/<%= a._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+      <form action="/asignaturas/<%= a._id %>/eliminar" method="POST" style="display:inline" onsubmit="return confirm('¿Eliminar asignatura?')">
+        <button type="submit" class="btn btn-sm btn-peligro">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

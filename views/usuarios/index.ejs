@@ -1,0 +1,68 @@
+<% locals.paginaActual = 'usuarios' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Usuarios del Sistema</h1>
+    <p class="page-sub"><%= usuarios.length %> usuario(s) registrado(s)</p>
+  </div>
+  <a href="/usuarios/nuevo" class="btn btn-primario">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Nuevo Usuario
+  </a>
+</div>
+
+<div class="tabla-card">
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Correo</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% usuarios.forEach(function(u) { %>
+    <tr>
+      <td><strong><%= u.nombre %></strong></td>
+      <td style="font-size:13px"><%= u.email %></td>
+      <td>
+        <span class="badge badge-<%= u.rol==='director'?'morado':u.rol==='subdirector'?'azul':u.rol==='docente'?'verde':'amarillo' %>">
+          <%= ROL_LABELS[u.rol] || u.rol %>
+        </span>
+      </td>
+      <td>
+        <% if (u.bloqueadoHasta && new Date() < new Date(u.bloqueadoHasta)) { %>
+          <span class="badge badge-rojo">Bloqueado</span>
+        <% } else { %>
+          <span class="badge badge-<%= u.estado==='activo'?'verde':'rojo' %>"><%= u.estado %></span>
+        <% } %>
+      </td>
+      <td class="acciones">
+        <a href="/usuarios/<%= u._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+        <a href="/usuarios/<%= u._id %>/password" class="btn btn-sm btn-ghost" title="Cambiar contraseña">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:13px;height:13px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Contraseña
+        </a>
+        <% if (u.bloqueadoHasta && new Date() < new Date(u.bloqueadoHasta)) { %>
+        <form action="/usuarios/<%= u._id %>/desbloquear" method="POST" style="display:inline">
+          <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--success)">Desbloquear</button>
+        </form>
+        <% } %>
+        <% if (u._id.toString() !== usuarioActual.id.toString()) { %>
+        <form action="/usuarios/<%= u._id %>/eliminar" method="POST" style="display:inline"
+              onsubmit="return confirm('¿Eliminar al usuario <%= u.nombre %>?')">
+          <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger)">Eliminar</button>
+        </form>
+        <% } %>
+      </td>
+    </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<%- include('../partials/layout_fin') %>

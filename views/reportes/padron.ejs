@@ -1,0 +1,59 @@
+<% locals.paginaActual = 'reportes' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Padrón de Estudiantes</h1><p class="page-sub"><%= matriculas.length %> registro(s)</p></div>
+  <div class="page-acciones">
+    <button onclick="window.print()" class="btn btn-secundario">Imprimir</button>
+    <a href="/reportes" class="btn btn-outline">Volver</a>
+  </div>
+</div>
+<!-- Filtros -->
+<form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">
+  <select name="anio" onchange="this.form.submit()" style="padding:9px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius)">
+    <% [anioEsc, anioEsc-1, anioEsc+1].forEach(function(a) { %>
+    <option value="<%= a %>" <%= a===anioEsc?'selected':'' %>><%= a %></option>
+    <% }) %>
+  </select>
+  <select name="gradoId" onchange="this.form.submit()" style="padding:9px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius)">
+    <option value="">Todos los grados</option>
+    <% grados.forEach(function(g) { %>
+    <option value="<%= g._id %>" <%= gradoId===g._id.toString()?'selected':'' %>><%= g.nombre %></option>
+    <% }) %>
+  </select>
+  <% if (secciones.length) { %>
+  <select name="seccionId" onchange="this.form.submit()" style="padding:9px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius)">
+    <option value="">Todas las secciones</option>
+    <% secciones.forEach(function(s) { %>
+    <option value="<%= s._id %>" <%= seccionId===s._id.toString()?'selected':'' %>>Sección <%= s.nombre %></option>
+    <% }) %>
+  </select>
+  <% } %>
+  <select name="estado" onchange="this.form.submit()" style="padding:9px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius)">
+    <option value="">Todos los estados</option>
+    <option value="activa"     <%= estado==='activa'    ?'selected':'' %>>Activa</option>
+    <option value="anulada"    <%= estado==='anulada'   ?'selected':'' %>>Anulada</option>
+    <option value="trasladada" <%= estado==='trasladada'?'selected':'' %>>Trasladada</option>
+  </select>
+</form>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>#</th><th>Expediente</th><th>Nombre</th><th>Identidad</th><th>Grado</th><th>Sección</th><th>Jornada</th><th>Estado</th></tr></thead>
+  <tbody>
+  <% if (!matriculas.length) { %>
+  <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--gray-400)">Sin resultados</td></tr>
+  <% } %>
+  <% matriculas.forEach(function(m, i) { %>
+  <tr>
+    <td style="color:var(--gray-400)"><%= i+1 %></td>
+    <td><code><%= m.alumno.expediente %></code></td>
+    <td><strong><%= m.alumno.apellido %>, <%= m.alumno.nombre %></strong></td>
+    <td style="font-family:var(--font-mono);font-size:12px"><%= m.alumno.numIdentidad||'—' %></td>
+    <td><%= m.seccion && m.seccion.grado ? m.seccion.grado.nombre : '—' %></td>
+    <td>Sec. <%= m.seccion ? m.seccion.nombre : '—' %></td>
+    <td style="text-transform:capitalize"><%= m.alumno.jornada||'—' %></td>
+    <td><span class="badge badge-<%= m.estado==='activa'?'verde':'rojo' %>"><%= m.estado %></span></td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<%- include('../partials/layout_fin') %>

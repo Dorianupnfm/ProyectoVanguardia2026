@@ -1,0 +1,293 @@
+<% locals.paginaActual = 'asistencia-nueva' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Pase de Asistencia</h1>
+    <p class="page-sub">
+      <strong><%= asignatura.nombre %></strong> &mdash;
+      Sección <%= seccion.nombre %> &mdash;
+      <%= new Date(fecha + 'T12:00:00').toLocaleDateString('es-HN', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) %>
+    </p>
+  </div>
+  <a href="/asistencia/nueva" class="btn btn-secundario">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Cambiar
+  </a>
+</div>
+
+<% if (asistenciaExistente) { %>
+<div class="alerta alerta-error" style="margin-bottom:16px">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  Ya existe un registro de asistencia para esta sesión. Si guardas, se actualizará.
+</div>
+<% } %>
+
+<!-- Contador en tiempo real -->
+<div class="asistencia-contador" id="contador">
+  <div class="cnt-item cnt-presente">
+    <span class="cnt-num" id="cntPresente"><%= matriculas.length %></span>
+    <span class="cnt-lbl">Presentes</span>
+  </div>
+  <div class="cnt-item cnt-ausente">
+    <span class="cnt-num" id="cntAusente">0</span>
+    <span class="cnt-lbl">Ausentes</span>
+  </div>
+  <div class="cnt-item cnt-tarde">
+    <span class="cnt-num" id="cntTarde">0</span>
+    <span class="cnt-lbl">Tarde</span>
+  </div>
+  <div class="cnt-item cnt-excusa">
+    <span class="cnt-num" id="cntExcusa">0</span>
+    <span class="cnt-lbl">Excusa</span>
+  </div>
+  <div class="cnt-item" style="margin-left:auto">
+    <span class="cnt-num" style="color:var(--gray-600)"><%= matriculas.length %></span>
+    <span class="cnt-lbl">Total</span>
+  </div>
+</div>
+
+<form action="/asistencia/guardar" method="POST" id="frmAsistencia">
+  <input type="hidden" name="asignaturaId" value="<%= asignatura._id %>">
+  <input type="hidden" name="seccionId"    value="<%= seccion._id %>">
+  <input type="hidden" name="fecha"        value="<%= fecha %>">
+
+  <!-- Datos de la sesión -->
+  <div class="form-card" style="margin-bottom:16px">
+    <div class="form-seccion-titulo">Datos de la Sesión</div>
+    <div class="form-grid">
+      <div class="campo">
+        <label>Tema de la clase</label>
+        <input type="text" name="tema" placeholder="Ej: Ecuaciones lineales"
+               value="<%= asistenciaExistente ? asistenciaExistente.tema : '' %>">
+      </div>
+      <div class="campo">
+        <label>Comentario general</label>
+        <input type="text" name="comentarioGeneral" placeholder="Observaciones generales de la sesión"
+               value="<%= asistenciaExistente ? asistenciaExistente.comentarioGeneral : '' %>">
+      </div>
+    </div>
+  </div>
+
+  <!-- Acciones rápidas -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button type="button" class="btn btn-sm btn-secundario" onclick="marcarTodos('presente')">Todos presentes</button>
+    <button type="button" class="btn btn-sm btn-secundario" onclick="marcarTodos('ausente')">Todos ausentes</button>
+    <span style="flex:1"></span>
+    <span style="font-size:13px;color:var(--gray-500);align-self:center">
+      Haz clic en el estado de cada alumno para cambiarlo
+    </span>
+  </div>
+
+  <!-- Lista de alumnos -->
+  <div class="asistencia-lista">
+    <% matriculas.forEach(function(m, idx) { %>
+    <% 
+      var estadoActual = 'presente';
+      if (asistenciaExistente) {
+        var det = asistenciaExistente.detalle.find(function(d) {
+          return d.alumno.toString() === m.alumno._id.toString();
+        });
+        if (det) estadoActual = det.estado;
+      }
+      var comentActual = '';
+      if (asistenciaExistente) {
+        var detC = asistenciaExistente.detalle.find(function(d) {
+          return d.alumno.toString() === m.alumno._id.toString();
+        });
+        if (detC) comentActual = detC.comentario;
+      }
+    %>
+    <div class="alumno-fila" id="fila-<%= m.alumno._id %>">
+
+      <!-- Avatar y nombre -->
+      <div class="alumno-info">
+        <div class="alumno-num"><%= idx + 1 %></div>
+        <div class="alumno-avatar" id="av-<%= m.alumno._id %>">
+          <%= m.alumno.nombre.charAt(0) %><%= m.alumno.apellido.charAt(0) %>
+        </div>
+        <div>
+          <div class="alumno-nombre"><%= m.alumno.apellido %>, <%= m.alumno.nombre %></div>
+          <div class="alumno-exp"><%= m.alumno.expediente %></div>
+        </div>
+      </div>
+
+      <!-- Botones de estado -->
+      <div class="alumno-estados">
+        <input type="hidden" name="estado_<%= m.alumno._id %>" id="inp-<%= m.alumno._id %>" value="<%= estadoActual %>">
+
+        <button type="button"
+          class="btn-estado btn-presente <%= estadoActual==='presente'?'activo':'' %>"
+          onclick="setEstado('<%= m.alumno._id %>', 'presente')">
+          Presente
+        </button>
+        <button type="button"
+          class="btn-estado btn-ausente <%= estadoActual==='ausente'?'activo':'' %>"
+          onclick="setEstado('<%= m.alumno._id %>', 'ausente')">
+          Ausente
+        </button>
+        <button type="button"
+          class="btn-estado btn-tarde <%= estadoActual==='tarde'?'activo':'' %>"
+          onclick="setEstado('<%= m.alumno._id %>', 'tarde')">
+          Tarde
+        </button>
+        <button type="button"
+          class="btn-estado btn-excusa <%= estadoActual==='excusa'?'activo':'' %>"
+          onclick="setEstado('<%= m.alumno._id %>', 'excusa')">
+          Excusa
+        </button>
+      </div>
+
+      <!-- Comentario individual -->
+      <div class="alumno-comentario">
+        <input type="text"
+               name="comentario_<%= m.alumno._id %>"
+               value="<%= comentActual %>"
+               placeholder="Comentario..."
+               class="input-comentario">
+      </div>
+
+    </div>
+    <% }) %>
+  </div>
+
+  <!-- Botón guardar fijo al fondo -->
+  <div class="asistencia-guardar">
+    <div style="font-size:13px;color:var(--gray-500)">
+      <span id="resumenGuardar"><%= matriculas.length %> alumnos</span>
+    </div>
+    <button type="submit" class="btn btn-primario" style="padding:11px 28px;font-size:15px">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13"/></svg>
+      Guardar Asistencia
+    </button>
+  </div>
+
+</form>
+
+<style>
+/* Contador superior */
+.asistencia-contador {
+  display: flex; gap: 12px; align-items: center;
+  background: white; border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg); padding: 14px 20px;
+  margin-bottom: 16px; box-shadow: var(--shadow-sm);
+}
+.cnt-item { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+.cnt-num  { font-size: 22px; font-weight: 800; line-height: 1; }
+.cnt-lbl  { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing:.05em; margin-top:2px; }
+.cnt-presente .cnt-num { color: var(--success); }
+.cnt-ausente  .cnt-num { color: var(--danger); }
+.cnt-tarde    .cnt-num { color: var(--warning); }
+.cnt-excusa   .cnt-num { color: var(--primary); }
+
+/* Lista de alumnos */
+.asistencia-lista { display: flex; flex-direction: column; gap: 6px; margin-bottom: 80px; }
+
+.alumno-fila {
+  background: white; border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius); padding: 12px 16px;
+  display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap; transition: border-color .15s;
+}
+.alumno-fila.estado-ausente  { border-color: var(--danger);  background: var(--danger-cl); }
+.alumno-fila.estado-tarde    { border-color: var(--warning); background: var(--warning-cl); }
+.alumno-fila.estado-excusa   { border-color: var(--primary); background: var(--primary-bg); }
+
+.alumno-num    { font-size:12px; color:var(--gray-400); min-width:22px; text-align:right; }
+.alumno-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--primary); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.alumno-info   { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 180px; }
+.alumno-nombre { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+.alumno-exp    { font-size: 11.5px; color: var(--gray-400); font-family: var(--font-mono); }
+
+/* Botones de estado */
+.alumno-estados { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-estado {
+  padding: 6px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; border: 2px solid transparent; transition: all .12s;
+  background: var(--gray-100); color: var(--gray-500);
+}
+.btn-presente { }
+.btn-presente.activo { background: var(--success-cl); color: var(--success); border-color: var(--success); }
+.btn-ausente.activo  { background: var(--danger-cl);  color: var(--danger);  border-color: var(--danger); }
+.btn-tarde.activo    { background: var(--warning-cl); color: var(--warning); border-color: var(--warning); }
+.btn-excusa.activo   { background: var(--primary-cl); color: var(--primary); border-color: var(--primary); }
+.btn-estado:hover    { filter: brightness(.95); }
+
+/* Comentario individual */
+.alumno-comentario { flex: 1; min-width: 140px; }
+.input-comentario {
+  width: 100%; padding: 6px 10px;
+  border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+  font-size: 13px; font-family: var(--font); color: var(--gray-700);
+}
+.input-comentario:focus { outline: none; border-color: var(--primary); }
+
+/* Barra de guardar fija */
+.asistencia-guardar {
+  position: fixed; bottom: 0; left: var(--sb-w); right: 0;
+  background: white; border-top: 1px solid var(--gray-200);
+  padding: 14px 28px; display: flex; align-items: center;
+  justify-content: space-between; z-index: 100;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+}
+@media (max-width:1024px) { .asistencia-guardar { left: 0; } }
+</style>
+
+<script>
+var totales = { presente: <%= matriculas.length %>, ausente: 0, tarde: 0, excusa: 0 };
+
+function setEstado(alumnoId, nuevoEstado) {
+  var inp   = document.getElementById('inp-' + alumnoId);
+  var fila  = document.getElementById('fila-' + alumnoId);
+  var viejo = inp.value;
+
+  if (viejo === nuevoEstado) return; // sin cambio
+
+  // Actualizar contadores
+  totales[viejo]--;
+  totales[nuevoEstado]++;
+  actualizarContador();
+
+  // Actualizar input
+  inp.value = nuevoEstado;
+
+  // Actualizar clase de la fila
+  fila.className = 'alumno-fila' + (nuevoEstado !== 'presente' ? ' estado-' + nuevoEstado : '');
+
+  // Actualizar botones activos dentro de esa fila
+  fila.querySelectorAll('.btn-estado').forEach(function(btn) {
+    btn.classList.remove('activo');
+  });
+  var btnActivo = fila.querySelector('.btn-' + nuevoEstado);
+  if (btnActivo) btnActivo.classList.add('activo');
+}
+
+function actualizarContador() {
+  document.getElementById('cntPresente').textContent = totales.presente;
+  document.getElementById('cntAusente').textContent  = totales.ausente;
+  document.getElementById('cntTarde').textContent    = totales.tarde;
+  document.getElementById('cntExcusa').textContent   = totales.excusa;
+  var total = Object.values(totales).reduce(function(a,b){return a+b;},0);
+  document.getElementById('resumenGuardar').textContent =
+    totales.presente + ' presentes, ' +
+    totales.ausente  + ' ausentes, ' +
+    totales.tarde    + ' tarde, ' +
+    totales.excusa   + ' excusa';
+}
+
+function marcarTodos(estado) {
+  var ids = [];
+  <% matriculas.forEach(function(m) { %>
+  ids.push('<%= m.alumno._id %>');
+  <% }) %>
+  ids.forEach(function(id) { setEstado(id, estado); });
+}
+</script>
+
+<%- include('../partials/layout_fin') %>

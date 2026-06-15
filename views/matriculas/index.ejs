@@ -1,0 +1,65 @@
+<% locals.paginaActual = 'matriculas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Matrículas</h1>
+    <p class="page-sub"><%= matriculas.length %> registro(s) — <%= anio %></p>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <form action="/matriculas" method="GET" style="display:flex;gap:8px">
+      <select name="anio" onchange="this.form.submit()" style="padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px">
+        <% (anios.length ? anios : [anio]).forEach(a => { %>
+        <option value="<%= a %>" <%= a===anio?'selected':'' %>><%= a %></option>
+        <% }) %>
+      </select>
+    </form>
+    <a href="/matriculas/nueva" class="btn btn-primario">+ Nueva Matrícula</a>
+  </div>
+</div>
+
+<% if (!matriculas.length) { %>
+<div class="vacio">
+  <div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+  <p>Sin matrículas para <%= anio %>.</p>
+  <a href="/matriculas/nueva" class="btn btn-primario">Registrar la primera</a>
+</div>
+<% } else { %>
+<div class="tabla-card">
+  <table class="tabla">
+    <thead><tr>
+      <th>N° Matrícula</th><th>Alumno</th><th>Sección / Grado</th>
+      <th>Fecha</th><th>Estado</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>
+    <% matriculas.forEach(m => { %>
+    <tr>
+      <td><code><%= m.numMatricula %></code></td>
+      <td>
+        <strong><%= m.alumno?.apellido %>, <%= m.alumno?.nombre %></strong><br>
+        <small class="txt-gris"><%= m.alumno?.expediente %></small>
+      </td>
+      <td>Sec. <%= m.seccion?.nombre||'—' %> — <%= m.seccion?.grado?.nombre||'—' %></td>
+      <td><%= m.fechaMatricula ? new Date(m.fechaMatricula).toLocaleDateString('es-HN') : '—' %></td>
+      <td>
+        <span class="badge badge-<%= m.estado==='activa'?'verde':m.estado==='anulada'?'rojo':'amarillo' %>">
+          <%= m.estado %>
+        </span>
+      </td>
+      <td class="acciones">
+        <a href="/matriculas/<%= m._id %>" class="btn btn-sm btn-outline">Ver</a>
+        <a href="/matriculas/<%= m._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+        <form action="/matriculas/<%= m._id %>/eliminar" method="POST" style="display:inline"
+              onsubmit="return confirm('¿Eliminar esta matrícula?')">
+          <button type="submit" class="btn btn-sm btn-peligro">Eliminar</button>
+        </form>
+      </td>
+    </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<%- include('../partials/layout_fin') %>

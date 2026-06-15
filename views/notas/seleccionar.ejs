@@ -1,0 +1,74 @@
+<% locals.paginaActual = 'notas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Registro de Notas</h1><p class="page-sub">Selecciona asignatura, sección y parcial</p></div>
+  <a href="/notas/parciales" class="btn btn-outline">Gestionar Parciales</a>
+</div>
+
+<div class="form-card" style="max-width:640px">
+  <div class="form-seccion-titulo">Configurar Sesión de Notas</div>
+  <form action="/notas/libro" method="GET" id="frmNotas">
+    <div class="form-grid">
+      <div class="campo campo-ancho">
+        <label>Asignatura <span class="req">*</span></label>
+        <select name="asignaturaId" id="selAsig" required onchange="cargarSecciones(this.value)">
+          <option value="">Seleccionar asignatura...</option>
+          <% asignaturas.forEach(function(a) { %>
+          <option value="<%= a._id %>" <%= asignaturaId===a._id.toString()?'selected':'' %>>
+            <%= a.nombre %> — <%= a.grado ? a.grado.nombre : '' %>
+          </option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Sección <span class="req">*</span></label>
+        <select name="seccionId" id="selSec" required>
+          <option value="">Seleccionar sección...</option>
+          <% secciones.forEach(function(s) { %>
+          <option value="<%= s._id %>" <%= seccionId===s._id.toString()?'selected':'' %>>Sección <%= s.nombre %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Parcial <span class="req">*</span></label>
+        <select name="parcialId" required>
+          <option value="">Seleccionar parcial...</option>
+          <% parciales.forEach(function(p) { %>
+          <option value="<%= p._id %>" <%= parcialId===p._id.toString()?'selected':'' %>>
+            <%= p.nombre %> (<%= p.anioEscolar %>)
+            <% if(p.estado==='activo'){ %> ✓<% } %>
+          </option>
+          <% }) %>
+        </select>
+        <% if (!parciales.length) { %>
+        <span class="campo-hint" style="color:var(--danger)">
+          Sin parciales. <a href="/notas/parciales">Crear parciales</a>
+        </span>
+        <% } %>
+      </div>
+    </div>
+    <div class="form-botones">
+      <a href="/dashboard" class="btn btn-secundario">Cancelar</a>
+      <button type="submit" class="btn btn-primario">Abrir libro de notas</button>
+    </div>
+  </form>
+</div>
+<script>
+function cargarSecciones(asigId) {
+  var sel = document.getElementById('selSec');
+  if (!asigId) { sel.innerHTML = '<option value="">Seleccionar sección...</option>'; return; }
+  sel.innerHTML = '<option value="">Cargando...</option>';
+  fetch('/notas/api/secciones/' + asigId)
+    .then(function(r){ return r.json(); })
+    .then(function(list){
+      sel.innerHTML = '<option value="">Seleccionar sección...</option>' +
+        list.map(function(s){ return '<option value="'+s._id+'">Sección '+s.nombre+'</option>'; }).join('');
+    });
+}
+window.addEventListener('DOMContentLoaded', function() {
+  var sel = document.getElementById('selAsig');
+  if (sel.value) cargarSecciones(sel.value);
+});
+</script>
+<%- include('../partials/layout_fin') %>

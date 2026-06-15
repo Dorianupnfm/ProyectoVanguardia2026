@@ -1,0 +1,44 @@
+  </main>
+
+  <footer class="footer">
+    SoftWork &copy; <%= new Date().getFullYear() %> &mdash; Sistema de Gestión Escolar
+  </footer>
+
+</div><!-- /main-wrap -->
+</div><!-- /app-shell -->
+
+<script>
+// Reloj
+(function tick() {
+  var el = document.getElementById('reloj');
+  if (el) el.textContent = new Date().toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  setTimeout(tick, 1000);
+})();
+
+// Sidebar toggle
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('sidebar-abierto');
+}
+// Cerrar sidebar al hacer clic fuera (móvil)
+document.addEventListener('click', function(e) {
+  var sb = document.getElementById('sidebar');
+  if (sb.classList.contains('sidebar-abierto') &&
+      !sb.contains(e.target) &&
+      !e.target.closest('.topbar-toggle')) {
+    sb.classList.remove('sidebar-abierto');
+  }
+});
+
+// Auto-cerrar alertas flash
+setTimeout(function() {
+  document.querySelectorAll('.alerta').forEach(function(a) {
+    a.style.transition = 'opacity .4s, margin .4s, padding .4s';
+    a.style.opacity = '0';
+    a.style.marginBottom = '0';
+    a.style.padding = '0';
+    setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); }, 420);
+  });
+}, 4000);
+</script>
+</body>
+</html>
