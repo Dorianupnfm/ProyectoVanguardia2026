@@ -1,0 +1,54 @@
+<% locals.paginaActual = 'asistencia-historial' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<%
+  var pres  = registro.detalle.filter(function(d){return d.estado==='presente';}).length;
+  var tard  = registro.detalle.filter(function(d){return d.estado==='tarde';}).length;
+  var aus   = registro.detalle.filter(function(d){return d.estado==='ausente';}).length;
+  var exc   = registro.detalle.filter(function(d){return d.estado==='excusa';}).length;
+  var total = registro.detalle.length;
+%>
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Detalle de Asistencia</h1>
+    <p class="page-sub">
+      <strong><%= registro.asignatura ? registro.asignatura.nombre : '—' %></strong> &mdash;
+      Sección <%= registro.seccion ? registro.seccion.nombre : '—' %> &mdash;
+      <%= new Date(registro.fecha).toLocaleDateString('es-HN', {weekday:'long',year:'numeric',month:'long',day:'numeric'}) %>
+    </p>
+  </div>
+  <div class="page-acciones">
+    <a href="/asistencia/lista?asignaturaId=<%= registro.asignatura ? registro.asignatura._id : '' %>&seccionId=<%= registro.seccion ? registro.seccion._id : '' %>&fecha=<%= new Date(registro.fecha).toISOString().split('T')[0] %>" class="btn btn-secundario">Editar</a>
+    <a href="/asistencia/historial" class="btn btn-outline">Volver</a>
+  </div>
+</div>
+
+<!-- Resumen -->
+<div class="stats-grid" style="margin-bottom:20px">
+  <div class="stat-card"><div class="stat-icono si-verde"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="stat-num" style="color:var(--success)"><%= pres %></div><div class="stat-lbl">Presentes</div></div></div>
+  <div class="stat-card"><div class="stat-icono si-naranja"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg></div><div><div class="stat-num" style="color:var(--danger)"><%= aus %></div><div class="stat-lbl">Ausentes</div></div></div>
+  <div class="stat-card"><div class="stat-icono si-morado"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="stat-num" style="color:var(--warning)"><%= tard %></div><div class="stat-lbl">Tarde</div></div></div>
+  <div class="stat-card"><div class="stat-icono si-azul"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><div><div class="stat-num" style="color:var(--primary)"><%= exc %></div><div class="stat-lbl">Excusas</div></div></div>
+</div>
+
+<% if (registro.tema) { %><p style="margin-bottom:8px;font-size:14px"><strong>Tema:</strong> <%= registro.tema %></p><% } %>
+<% if (registro.comentarioGeneral) { %><p style="margin-bottom:16px;font-size:14px"><strong>Comentario:</strong> <%= registro.comentarioGeneral %></p><% } %>
+
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>#</th><th>Alumno</th><th>Estado</th><th>Comentario</th></tr></thead>
+  <tbody>
+  <% registro.detalle.forEach(function(d, i) { %>
+  <tr>
+    <td style="color:var(--gray-400)"><%= i+1 %></td>
+    <td><strong><%= d.alumno ? d.alumno.apellido+', '+d.alumno.nombre : '—' %></strong></td>
+    <td>
+      <span class="badge badge-<%= d.estado==='presente'?'verde':d.estado==='ausente'?'rojo':d.estado==='tarde'?'amarillo':'azul' %>">
+        <%= d.estado %>
+      </span>
+    </td>
+    <td style="font-size:13px;color:var(--gray-500)"><%= d.comentario||'—' %></td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<%- include('../partials/layout_fin') %>

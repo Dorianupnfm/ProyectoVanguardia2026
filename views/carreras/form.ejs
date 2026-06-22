@@ -1,0 +1,26 @@
+<% locals.paginaActual = 'carreras' %>
+<%- include('../partials/layout_inicio') %><%- include('../partials/mensajes') %>
+<div class="page-header"><h1 class="page-titulo"><%= titulo %></h1><a href="/carreras" class="btn btn-outline">← Volver</a></div>
+<% var accion = esEditar ? '/carreras/' + carrera._id : '/carreras' %>
+<form action="<%= accion %>" method="POST">
+  <div class="form-card">
+    <div class="form-seccion-titulo">Datos de la Carrera</div>
+    <div class="form-grid">
+      <div class="campo campo-ancho"><label>Nombre *</label><input type="text" name="nombre" value="<%= carrera.nombre||'' %>" placeholder="Ej: Bachillerato Técnico en Computación" required></div>
+      <div class="campo"><label>Código</label><input type="text" name="codigo" value="<%= carrera.codigo||'' %>" placeholder="BTC"></div>
+      <div class="campo"><label>Duración (años)</label><input type="number" name="duracion" value="<%= carrera.duracion||3 %>" min="1" max="6"></div>
+      <div class="campo"><label>Estado</label>
+        <select name="estado">
+          <option value="activa" <%= (carrera.estado||'activa')==='activa'?'selected':'' %>>Activa</option>
+          <option value="inactiva" <%= carrera.estado==='inactiva'?'selected':'' %>>Inactiva</option>
+        </select>
+      </div>
+      <div class="campo campo-ancho"><label>Descripción</label><textarea name="descripcion" rows="2" placeholder="Descripción breve de la carrera"><%= carrera.descripcion||'' %></textarea></div>
+    </div>
+  </div>
+  <div class="form-botones">
+    <a href="/carreras" class="btn btn-outline">Cancelar</a>
+    <button type="submit" class="btn btn-primario"><%= esEditar?'Guardar':'Registrar' %></button>
+  </div>
+</form>
+<%- include('../partials/layout_fin') %>

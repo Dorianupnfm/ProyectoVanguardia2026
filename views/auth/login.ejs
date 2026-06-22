@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar Sesión — SoftWork</title>
+<link rel="stylesheet" href="/css/estilo.css">
+</head>
+<body class="body-auth">
+<div class="auth-outer">
+
+  <div class="auth-logo-wrap">
+    <div class="auth-logo-ico">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+    </div>
+    <span class="auth-logo-name">SoftWork</span>
+  </div>
+
+  <div class="auth-card">
+    <h1 class="auth-titulo">Bienvenido</h1>
+    <p class="auth-sub">Ingrese sus credenciales para acceder al sistema</p>
+
+    <% if (mensajesError && mensajesError.length > 0) { %>
+    <% mensajesError.forEach(function(m) { %>
+    <div class="alerta alerta-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <%= m %>
+    </div>
+    <% }) %>
+    <% } %>
+
+    <% if (mensajesExito && mensajesExito.length > 0) { %>
+    <% mensajesExito.forEach(function(m) { %>
+    <div class="alerta alerta-exito">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <%= m %>
+    </div>
+    <% }) %>
+    <% } %>
+
+    <form action="/auth/login" method="POST" class="auth-form">
+      <div class="campo">
+        <label>Correo Electrónico</label>
+        <input type="email" name="email" placeholder="correo@ejemplo.com" required autocomplete="email">
+      </div>
+      <div class="campo">
+        <label>Contraseña</label>
+        <input type="password" name="password" placeholder="Ingrese su contraseña" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primario btn-block" style="margin-top:8px">
+        Iniciar Sesión
+      </button>
+    </form>
+
+    <div class="auth-pie">
+      ¿No tiene cuenta? <a href="/auth/registro">Crear cuenta</a>
+    </div>
+  </div>
+
+</div>
+
+<div style="position:fixed;bottom:14px;right:16px;font-size:11px;
+            color:rgba(255,255,255,.35);font-family:monospace;
+            letter-spacing:.05em;user-select:none">
+  SoftWork V19
+</div>
+
+</body>
+</html>

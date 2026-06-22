@@ -1,0 +1,35 @@
+<% locals.paginaActual = 'reportes' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Carga Docente <%= anio %></h1></div>
+  <div class="page-acciones">
+    <button onclick="window.print()" class="btn btn-secundario">Imprimir</button>
+    <a href="/reportes" class="btn btn-outline">Volver</a>
+  </div>
+</div>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Docente</th><th>Especialidad</th><th>Asignaturas</th><th>Secciones Tutor</th><th>Hrs/Sem</th></tr></thead>
+  <tbody>
+  <% datos.forEach(function(d) { %>
+  <tr>
+    <td><strong><%= d.docente.apellido %>, <%= d.docente.nombre %></strong></td>
+    <td style="font-size:12.5px"><%= d.docente.especialidad||'—' %></td>
+    <td>
+      <% d.asignaturas.forEach(function(a) { %>
+      <div style="font-size:12px"><%= a.nombre %> (<%= a.grado?a.grado.nombre:'—' %>)</div>
+      <% }) %>
+      <% if (!d.asignaturas.length) { %><span style="color:var(--gray-400);font-size:12px">Sin asignaturas</span><% } %>
+    </td>
+    <td style="font-size:12.5px">
+      <% d.secciones.forEach(function(s) { %>
+      <div>Sec. <%= s.nombre %> — <%= s.grado?s.grado.nombre:'—' %></div>
+      <% }) %>
+      <% if (!d.secciones.length) { %>—<% } %>
+    </td>
+    <td style="text-align:center;font-weight:700"><%= d.horasTotales %> hrs</td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<%- include('../partials/layout_fin') %>

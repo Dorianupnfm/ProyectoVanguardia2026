@@ -1,0 +1,119 @@
+<% locals.paginaActual = 'usuarios' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <h1 class="page-titulo"><%= titulo %></h1>
+  <a href="/usuarios" class="btn btn-outline">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Volver
+  </a>
+</div>
+
+<% var accion = esEditar ? '/usuarios/' + usuario._id : '/usuarios' %>
+<div style="max-width:520px">
+  <form action="<%= accion %>" method="POST">
+    <div class="form-card">
+      <div class="form-seccion-titulo">Datos del Usuario</div>
+      <div class="form-grid">
+
+        <div class="campo campo-ancho">
+          <label>Nombre completo <span class="req">*</span></label>
+          <input type="text" name="nombre" value="<%= usuario.nombre||'' %>" required placeholder="Nombre del usuario">
+        </div>
+
+        <div class="campo campo-ancho">
+          <label>Correo Electrónico <span class="req">*</span></label>
+          <input type="email" name="email" value="<%= usuario.email||'' %>" required placeholder="correo@institución.hn">
+        </div>
+
+        <% if (!esEditar) { %>
+        <div class="campo campo-ancho">
+          <label>Contraseña inicial <span class="req">*</span></label>
+          <input type="password" name="password" required placeholder="Mínimo 6 caracteres" minlength="6">
+          <span class="campo-hint">El usuario puede cambiarla después</span>
+        </div>
+        <% } %>
+
+        <div class="campo">
+          <label>Rol <span class="req">*</span></label>
+          <select name="rol" required>
+            <% Object.entries(ROL_LABELS).forEach(function(entry) { %>
+            <% var val = entry[0], lbl = entry[1]; %>
+            <% var puedeAsignar = (val !== 'director') || (usuarioActual.rol === 'director'); %>
+            <% if (puedeAsignar) { %>
+            <option value="<%= val %>" <%= (usuario.rol||'secretario')===val?'selected':'' %>>
+              <%= lbl %>
+            </option>
+            <% } %>
+            <% }) %>
+          </select>
+          <% if (usuarioActual.rol !== 'director') { %>
+          <span class="campo-hint">Solo el Director puede asignar el rol de Director a otra cuenta</span>
+          <% } %>
+        </div>
+
+        <div class="campo">
+          <label>Estado</label>
+          <select name="estado">
+            <option value="activo"   <%= (usuario.estado||'activo')==='activo'  ?'selected':'' %>>Activo</option>
+            <option value="inactivo" <%= usuario.estado==='inactivo'?'selected':'' %>>Inactivo</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Descripción de permisos por rol -->
+      <div style="margin-top:18px;padding:14px;background:var(--gray-50);border-radius:var(--radius);border:1px solid var(--gray-200)">
+        <div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
+          Permisos según rol
+        </div>
+        <div class="permisos-grid">
+          <div class="permiso-item permiso-director">
+            <strong>Director</strong> — Acceso total. Gestión de usuarios y configuración.
+          </div>
+          <div class="permiso-item permiso-sub">
+            <strong>Subdirector</strong> — Ver y editar todo. No elimina ni gestiona usuarios.
+          </div>
+          <div class="permiso-item permiso-admin">
+            <strong>Administrativo</strong> — CRUD completo de módulos académicos. Puede gestionar usuarios (excepto al Director) y ver contraseñas.
+          </div>
+          <div class="permiso-item permiso-sec">
+            <strong>Secretario</strong> — Alumnos y matrículas. Ver docentes y grados.
+          </div>
+          <div class="permiso-item permiso-cons">
+            <strong>Consejero</strong> — Solo consulta alumnos, matrículas y reportes.
+          </div>
+          <div class="permiso-item permiso-doc">
+            <strong>Docente</strong> — Solo su portal: asignaturas, alumnos y asistencia.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="form-botones">
+      <a href="/usuarios" class="btn btn-secundario">Cancelar</a>
+      <button type="submit" class="btn btn-primario">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13"/></svg>
+        <%= esEditar ? 'Guardar Cambios' : 'Crear Usuario' %>
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+.permisos-grid { display: flex; flex-direction: column; gap: 6px; }
+.permiso-item {
+  padding: 7px 10px; border-radius: var(--radius-sm);
+  font-size: 12.5px; border-left: 3px solid transparent;
+}
+.permiso-director { background:#f5f3ff; border-color:var(--purple); }
+.permiso-sub      { background:#eff6ff; border-color:var(--primary); }
+.permiso-admin    { background:#f0fdf4; border-color:var(--success); }
+.permiso-sec      { background:#fefce8; border-color:var(--warning); }
+.permiso-cons     { background:#fff7ed; border-color:var(--orange); }
+.permiso-doc      { background:#f9fafb; border-color:var(--gray-400); }
+</style>
+
+<%- include('../partials/layout_fin') %>

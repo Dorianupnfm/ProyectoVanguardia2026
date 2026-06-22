@@ -1,0 +1,25 @@
+<% locals.paginaActual = 'portal-estudiante' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <h1 class="page-titulo">Mi Asistencia</h1>
+  <a href="/portal-estudiante" class="btn btn-outline">Volver</a>
+</div>
+<% if (!registros.length) { %>
+<div class="vacio"><p>Sin registros de asistencia aún.</p></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Fecha</th><th>Asignatura</th><th>Estado</th><th>Comentario</th></tr></thead>
+  <tbody>
+  <% registros.forEach(function(r) { %>
+  <tr>
+    <td><%= new Date(r.fecha).toLocaleDateString('es-HN') %></td>
+    <td><strong><%= r.asignatura ? r.asignatura.nombre : '—' %></strong></td>
+    <td><span class="badge badge-<%= r.estado==='presente'?'verde':r.estado==='ausente'?'rojo':r.estado==='tarde'?'amarillo':'azul' %>"><%= r.estado %></span></td>
+    <td style="font-size:12.5px;color:var(--gray-500)"><%= r.comentario||'—' %></td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

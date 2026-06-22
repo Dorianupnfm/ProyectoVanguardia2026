@@ -1,0 +1,210 @@
+<% locals.paginaActual = 'matriculas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <h1 class="page-titulo"><%= titulo %></h1>
+  <a href="/matriculas" class="btn btn-outline">← Volver</a>
+</div>
+
+<% var accion = esEditar ? '/matriculas/' + matricula._id : '/matriculas' %>
+<form action="<%= accion %>" method="POST">
+  <div class="form-card">
+    <div class="form-seccion-titulo">Datos de la Matrícula</div>
+    <div class="form-grid">
+
+      <% if (!esEditar) { %>
+      <div class="campo campo-ancho">
+        <label>Alumno *</label>
+        <div style="position:relative">
+          <input type="text" id="buscarAlumno" placeholder="Escribe nombre o expediente para buscar..."
+                 autocomplete="off"
+                 style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius);font-size:14px"
+                 oninput="filtrarAlumnos(this.value)">
+          <div id="listaAlumnos" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--primary);border-top:none;border-radius:0 0 8px 8px;max-height:220px;overflow-y:auto;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.12)"></div>
+        </div>
+        <input type="hidden" name="alumno" id="alumnoId" required>
+        <span id="alumnoSeleccionado" style="font-size:12px;color:var(--success);margin-top:4px;display:none">✓ Alumno seleccionado</span>
+      </div>
+      <% } else { %>
+      <div class="campo campo-ancho">
+        <label>Alumno</label>
+        <input type="text" value="<%= matricula.alumno?.apellido %>, <%= matricula.alumno?.nombre %>" disabled class="input-dis">
+      </div>
+      <% } %>
+
+      <div class="campo">
+        <label>Sección *</label>
+        <select name="seccion" required>
+          <option value="">— Seleccionar sección —</option>
+          <% secciones.forEach(s => { %>
+          <option value="<%= s._id %>"
+            <%= matricula.seccion?._id?.toString()===s._id.toString()?'selected':'' %>>
+            Sec. <%= s.nombre %> — <%= s.grado?.nombre||'?' %>
+            <%= s.grado?.carrera?.nombre ? `(${s.grado.carrera.nombre})` : '' %>
+          </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label>Año Escolar</label>
+        <input type="number" name="anioEscolar"
+          value="<%= matricula.anioEscolar||new Date().getFullYear() %>" min="2000" max="2099">
+      </div>
+
+      <div class="campo">
+        <label>Fecha de Matrícula</label>
+        <input type="date" name="fechaMatricula"
+          value="<%= matricula.fechaMatricula ? new Date(matricula.fechaMatricula).toISOString().split('T')[0] : new Date().toISOString().split('T')[0] %>">
+      </div>
+
+      <div class="campo">
+        <label>Estado</label>
+        <select name="estado">
+          <option value="activa"     <%= (matricula.estado||'activa')==='activa'?'selected':'' %>>Activa</option>
+          <option value="anulada"    <%= matricula.estado==='anulada'?'selected':'' %>>Anulada</option>
+          <option value="trasladada" <%= matricula.estado==='trasladada'?'selected':'' %>>Trasladada</option>
+        </select>
+      </div>
+
+      <div class="campo campo-ancho">
+        <label>Observaciones</label>
+        <textarea name="observaciones" rows="2"><%= matricula.observaciones||'' %></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Padre / Madre / Encargado — vinculado en este mismo paso ── -->
+  <div class="form-card" style="margin-top:16px">
+    <div class="form-seccion-titulo">Padre / Madre / Encargado</div>
+
+    <div class="campo" style="margin-bottom:14px">
+      <label>Encargado responsable del alumno</label>
+      <div style="position:relative">
+        <input type="text" id="buscarPadre" placeholder="Escribe nombre del padre/encargado para buscar..."
+               autocomplete="off"
+               style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius);font-size:14px"
+               oninput="filtrarPadres(this.value)"
+               value="">
+        <div id="listaPadres" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--primary);border-top:none;border-radius:0 0 8px 8px;max-height:220px;overflow-y:auto;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.12)"></div>
+      </div>
+      <input type="hidden" name="padreId" id="padreId" value="">
+      <span style="font-size:12px;color:var(--gray-400);margin-top:4px;display:block">Deja en blanco para no asignar todavía.</span>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:14px">
+      <input type="checkbox" name="crearPadre" id="chkCrearPadre"
+             onchange="document.getElementById('bloqueNuevoPadre').style.display=this.checked?'block':'none'; if(this.checked) document.getElementById('selPadre').value='';">
+      Registrar un nuevo padre/madre/encargado para este alumno
+    </label>
+
+    <div id="bloqueNuevoPadre" style="display:none;border-top:1px dashed var(--gray-200);padding-top:14px">
+      <div class="form-grid">
+        <div class="campo"><label>Nombre(s)</label><input type="text" name="padreNombre" placeholder="Nombre del encargado"></div>
+        <div class="campo"><label>Apellido(s)</label><input type="text" name="padreApellido" placeholder="Apellido del encargado"></div>
+        <div class="campo"><label>Número de Identidad</label><input type="text" name="padreNumIdentidad" placeholder="0000-0000-00000"></div>
+        <div class="campo"><label>Parentesco</label>
+          <select name="padreParentesco">
+            <option value="padre">Padre</option>
+            <option value="madre">Madre</option>
+            <option value="tutor">Tutor Legal</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="campo"><label>Teléfono</label><input type="text" name="padreTelefono" placeholder="9999-9999"></div>
+        <div class="campo"><label>Correo Electrónico</label><input type="email" name="padreCorreo" placeholder="correo@ejemplo.com"></div>
+        <div class="campo campo-ancho"><label>Dirección</label><input type="text" name="padreDireccion"></div>
+        <div class="campo"><label>Ocupación</label><input type="text" name="padreOcupacion"></div>
+      </div>
+
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px" id="lblUsuarioPadre">
+        <input type="checkbox" name="crearUsuarioPadre" id="chkUsuarioPadre"
+               onchange="document.getElementById('avisoAccesoPadre').style.display=this.checked?'flex':'none'">
+        Crear cuenta de acceso al sistema para este encargado
+      </label>
+      <div id="avisoAccesoPadre" style="display:none;align-items:flex-start;gap:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;margin-top:10px;font-size:12.5px;color:#1e40af">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>El sistema generará una contraseña segura automáticamente. Después de guardar, podrás consultarla en la ficha del padre/encargado con el botón "Ver contraseña" para copiarla y entregársela.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-botones">
+    <a href="/matriculas" class="btn btn-outline">Cancelar</a>
+    <button type="submit" class="btn btn-primario">
+      <%= esEditar ? 'Guardar Cambios' : 'Registrar Matrícula' %>
+    </button>
+  </div>
+</form>
+
+<%- include('../partials/layout_fin') %>
+
+<script>
+// ── Datos de alumnos y padres serializados desde el servidor ─────────
+var ALUMNOS = <%- JSON.stringify((alumnos||[]).map(function(a){ return { id: a._id, texto: a.apellido+', '+a.nombre+' ('+a.expediente+')' }; })) %>;
+var PADRES  = <%- JSON.stringify((padres||[]).map(function(p){ return { id: p._id, texto: p.apellido+', '+p.nombre+(p.telefono?' — '+p.telefono:'')+(p.parentesco?' ('+p.parentesco+')':'') }; })) %>;
+
+// ── Búsqueda de alumnos ──────────────────────────────────────────────
+function filtrarAlumnos(q) {
+  var lista = document.getElementById('listaAlumnos');
+  if (!lista) return;
+  var termino = q.trim().toLowerCase();
+  if (!termino) { lista.style.display = 'none'; return; }
+  var filtrados = ALUMNOS.filter(function(a){ return a.texto.toLowerCase().includes(termino); }).slice(0, 12);
+  if (!filtrados.length) { lista.style.display = 'none'; return; }
+  lista.innerHTML = filtrados.map(function(a){
+    return '<div class="autocomplete-item" onclick="seleccionarAlumno(\''+ a.id +'\',\''+ a.texto.replace(/'/g,"\\'") +'\')" style="padding:9px 14px;cursor:pointer;font-size:13.5px;border-bottom:1px solid var(--gray-100)">'+ a.texto +'</div>';
+  }).join('');
+  lista.style.display = 'block';
+}
+
+function seleccionarAlumno(id, texto) {
+  document.getElementById('buscarAlumno').value = texto;
+  document.getElementById('alumnoId').value = id;
+  document.getElementById('listaAlumnos').style.display = 'none';
+  var badge = document.getElementById('alumnoSeleccionado');
+  if (badge) badge.style.display = 'block';
+}
+
+// ── Búsqueda de padres ───────────────────────────────────────────────
+function filtrarPadres(q) {
+  var lista = document.getElementById('listaPadres');
+  if (!lista) return;
+  var termino = q.trim().toLowerCase();
+  if (!termino) { lista.style.display = 'none'; return; }
+  var filtrados = PADRES.filter(function(p){ return p.texto.toLowerCase().includes(termino); }).slice(0, 12);
+  if (!filtrados.length) { lista.style.display = 'none'; return; }
+  lista.innerHTML = filtrados.map(function(p){
+    return '<div class="autocomplete-item" onclick="seleccionarPadre(\''+ p.id +'\',\''+ p.texto.replace(/'/g,"\\'") +'\')" style="padding:9px 14px;cursor:pointer;font-size:13.5px;border-bottom:1px solid var(--gray-100)">'+ p.texto +'</div>';
+  }).join('');
+  lista.style.display = 'block';
+}
+
+function seleccionarPadre(id, texto) {
+  document.getElementById('buscarPadre').value = texto;
+  document.getElementById('padreId').value = id;
+  document.getElementById('listaPadres').style.display = 'none';
+}
+
+// Cerrar listas al hacer clic fuera
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#buscarAlumno') && !e.target.closest('#listaAlumnos'))
+    { var l = document.getElementById('listaAlumnos'); if(l) l.style.display='none'; }
+  if (!e.target.closest('#buscarPadre') && !e.target.closest('#listaPadres'))
+    { var l = document.getElementById('listaPadres'); if(l) l.style.display='none'; }
+});
+
+// Hover highlight
+document.addEventListener('mouseover', function(e) {
+  if (e.target.classList.contains('autocomplete-item')) {
+    e.target.style.background = 'var(--gray-50)';
+  }
+});
+document.addEventListener('mouseout', function(e) {
+  if (e.target.classList.contains('autocomplete-item')) {
+    e.target.style.background = '';
+  }
+});
+</script>

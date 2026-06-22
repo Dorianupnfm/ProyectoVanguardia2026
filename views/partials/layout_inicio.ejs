@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= titulo %> — SoftWork</title>
+<link rel="stylesheet" href="/css/estilo.css">
+</head>
+<body>
+<div class="app-shell">
+
+<aside class="sidebar" id="sidebar">
+
+  <div class="sb-header">
+    <a href="/dashboard" class="sb-brand">
+      <div class="sb-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <span class="sb-name">SoftWork</span>
+    </a>
+    <button class="sb-toggle" onclick="toggleSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+
+  <% if (usuarioActual) { %>
+  <div class="sb-user">
+    <div class="sb-avatar"><%= usuarioActual.nombre.charAt(0).toUpperCase() %></div>
+    <div>
+      <div class="sb-user-nombre"><%= usuarioActual.nombre %></div>
+      <div class="sb-user-rol"><%= ROL_LABELS[usuarioActual.rol] || usuarioActual.rol %></div>
+    </div>
+  </div>
+  <% } %>
+
+  <nav class="sb-nav">
+
+    <%
+    var rol = usuarioActual ? usuarioActual.rol : '';
+    var esAdmin    = ['director','subdirector','administrativo'].includes(rol);
+    var esDirector = rol === 'director';
+    var esGestorUsuarios = ['director','administrativo'].includes(rol);
+    var esDocente  = rol === 'docente';
+    var esPadre    = rol === 'padre';
+    var esEstudiante = rol === 'estudiante';
+    var esStaff    = !esDocente && !esPadre && !esEstudiante;
+    %>
+
+    <!-- ══ PORTAL PADRE ════════════════════════════════════ -->
+    <% if (esPadre) { %>
+    <a href="/portal-padre" class="sb-item <%= locals.paginaActual==='portal-padre'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Mi Portal
+    </a>
+    <div class="sb-grupo-titulo">Comunicación</div>
+    <a href="/mensajeria" class="sb-item <%= locals.paginaActual==='mensajeria'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      Mensajes
+      <% if (locals.mensajesNoLeidos > 0) { %><span class="sb-badge"><%= mensajesNoLeidos %></span><% } %>
+    </a>
+    <% } %>
+
+    <!-- ══ PORTAL ESTUDIANTE ═══════════════════════════════ -->
+    <% if (esEstudiante) { %>
+    <a href="/portal-estudiante" class="sb-item <%= locals.paginaActual==='portal-estudiante'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Mi Portal
+    </a>
+    <a href="/portal-estudiante/notas" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/></svg>
+      Mis Notas
+    </a>
+    <a href="/portal-estudiante/asistencia" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
+      Mi Asistencia
+    </a>
+    <% } %>
+
+    <!-- ══ PORTAL DOCENTE ══════════════════════════════════ -->
+    <% if (esDocente) { %>
+    <a href="/docente" class="sb-item <%= locals.paginaActual==='docente-dashboard'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Mi Portal
+    </a>
+    <div class="sb-grupo-titulo">Académico</div>
+    <a href="/docente/mis-asignaturas" class="sb-item <%= locals.paginaActual==='mis-asignaturas'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      Mis Asignaturas
+    </a>
+    <a href="/docente/mis-alumnos" class="sb-item <%= locals.paginaActual==='mis-alumnos'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Mis Alumnos
+    </a>
+    <div class="sb-grupo-titulo">Registro</div>
+    <a href="/notas" class="sb-item <%= locals.paginaActual==='notas'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/></svg>
+      Notas
+    </a>
+    <a href="/asistencia/nueva" class="sb-item <%= locals.paginaActual==='asistencia-nueva'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
+      Asistencia
+    </a>
+    <a href="/reportes" class="sb-item <%= locals.paginaActual==='reportes'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+      Reportes
+    </a>
+    <div class="sb-grupo-titulo">Comunicación</div>
+    <a href="/mensajeria" class="sb-item <%= locals.paginaActual==='mensajeria'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      Mensajes
+      <% if (locals.mensajesNoLeidos > 0) { %><span class="sb-badge"><%= mensajesNoLeidos %></span><% } %>
+    </a>
+    <% } %>
+
+    <!-- ══ STAFF ADMINISTRATIVO ═════════════════════════════ -->
+    <% if (esStaff) { %>
+
+    <a href="/dashboard" class="sb-item <%= locals.paginaActual==='dashboard'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+
+    <div class="sb-grupo-titulo">Estudiantes</div>
+    <a href="/alumnos" class="sb-item <%= locals.paginaActual==='alumnos'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Alumnos
+    </a>
+    <a href="/matriculas" class="sb-item <%= locals.paginaActual==='matriculas'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+      Matrículas
+    </a>
+    <a href="/padres" class="sb-item <%= locals.paginaActual==='padres'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 21a8 8 0 00-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20.5c0-2.3-1.4-4.3-3.5-5.2"/><path d="M16 3.5a5 5 0 010 9.4"/></svg>
+      Padres de Familia
+    </a>
+
+    <% if (esAdmin) { %>
+    <div class="sb-grupo-titulo">Docentes</div>
+    <a href="/docentes" class="sb-item <%= locals.paginaActual==='docentes'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Docentes
+    </a>
+
+    <div class="sb-grupo-titulo">Académico</div>
+    <a href="/carreras" class="sb-item <%= locals.paginaActual==='carreras'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+      Carreras
+    </a>
+    <a href="/grados" class="sb-item <%= locals.paginaActual==='grados'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      Grados
+    </a>
+    <a href="/secciones" class="sb-item <%= locals.paginaActual==='secciones'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      Secciones
+    </a>
+    <a href="/asignaturas" class="sb-item <%= locals.paginaActual==='asignaturas'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      Asignaturas
+    </a>
+
+    <div class="sb-grupo-titulo">Registro</div>
+    <a href="/notas" class="sb-item <%= locals.paginaActual==='notas'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/></svg>
+      Notas
+    </a>
+    <a href="/asistencia/nueva" class="sb-item <%= locals.paginaActual==='asistencia-nueva'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
+      Asistencia
+    </a>
+    <% } %>
+
+    <div class="sb-grupo-titulo">Reportes</div>
+    <a href="/reportes" class="sb-item <%= locals.paginaActual==='reportes'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+      Reportes
+    </a>
+
+    <div class="sb-grupo-titulo">Comunicación</div>
+    <a href="/mensajeria" class="sb-item <%= locals.paginaActual==='mensajeria'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      Mensajes
+      <% if (locals.mensajesNoLeidos > 0) { %><span class="sb-badge"><%= mensajesNoLeidos %></span><% } %>
+    </a>
+
+    <% if (esGestorUsuarios || esDirector) { %>
+    <div class="sb-grupo-titulo">Administración</div>
+    <% } %>
+    <% if (esGestorUsuarios) { %>
+    <a href="/usuarios" class="sb-item <%= locals.paginaActual==='usuarios'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg>
+      Usuarios
+    </a>
+    <% } %>
+    <% if (esDirector) { %>
+    <a href="/configuracion" class="sb-item <%= locals.paginaActual==='configuracion'?'activo':'' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Configuración
+    </a>
+    <% } %>
+
+    <% } %>
+
+  </nav>
+
+  <div class="sb-footer">
+    <a href="/auth/logout" class="sb-logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesión
+    </a>
+  </div>
+
+</aside>
+
+<div class="main-wrap">
+  <header class="topbar">
+    <button class="topbar-toggle" onclick="toggleSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="topbar-breadcrumb"><strong><%= titulo %></strong></div>
+    <div class="topbar-right">
+      <span class="topbar-hora" id="reloj"></span>
+      <% if (usuarioActual) { %>
+      <div class="topbar-user-chip">
+        <div class="chip-avatar"><%= usuarioActual.nombre.charAt(0).toUpperCase() %></div>
+        <%= usuarioActual.nombre %>
+      </div>
+      <% } %>
+    </div>
+  </header>
+  <main class="contenido">

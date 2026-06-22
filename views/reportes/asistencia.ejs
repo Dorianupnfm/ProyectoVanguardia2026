@@ -1,0 +1,43 @@
+<% locals.paginaActual = 'reportes' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Reporte de Asistencia</h1></div>
+  <a href="/reportes" class="btn btn-outline">Volver</a>
+</div>
+<form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">
+  <select name="gradoId" onchange="this.form.submit()" style="padding:9px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius)">
+    <option value="">Seleccionar grado...</option>
+    <% grados.forEach(function(g) { %><option value="<%= g._id %>"><%= g.nombre %></option><% }) %>
+  </select>
+  <% if (secciones.length) { %>
+  <select name="seccionId" onchange="this.form.submit()" style="padding:9px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius)">
+    <option value="">Seleccionar sección...</option>
+    <% secciones.forEach(function(s) { %><option value="<%= s._id %>" <%= seccionId===s._id.toString()?'selected':'' %>>Sección <%= s.nombre %></option><% }) %>
+  </select>
+  <% } %>
+</form>
+<% if (registros.length) { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Fecha</th><th>Asignatura</th><th>Presentes</th><th>Ausentes</th><th>Tarde</th><th>Excusa</th></tr></thead>
+  <tbody>
+  <% registros.forEach(function(r) { %>
+  <% var pres=r.detalle.filter(function(d){return d.estado==='presente';}).length;
+     var aus=r.detalle.filter(function(d){return d.estado==='ausente';}).length;
+     var tard=r.detalle.filter(function(d){return d.estado==='tarde';}).length;
+     var exc=r.detalle.filter(function(d){return d.estado==='excusa';}).length; %>
+  <tr>
+    <td><%= new Date(r.fecha).toLocaleDateString('es-HN') %></td>
+    <td><strong><%= r.asignatura ? r.asignatura.nombre : '—' %></strong></td>
+    <td style="text-align:center"><span class="badge badge-verde"><%= pres %></span></td>
+    <td style="text-align:center"><span class="badge badge-rojo"><%= aus %></span></td>
+    <td style="text-align:center"><span class="badge badge-amarillo"><%= tard %></span></td>
+    <td style="text-align:center"><span class="badge badge-azul"><%= exc %></span></td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } else { %>
+<div class="vacio"><div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><p>Selecciona grado y sección para ver el reporte.</p></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

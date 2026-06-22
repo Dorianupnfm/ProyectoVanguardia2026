@@ -1,0 +1,61 @@
+<% locals.paginaActual = 'padres' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header"><h1 class="page-titulo"><%= titulo %></h1><a href="/padres" class="btn btn-outline">Volver</a></div>
+<% var accion = esEditar ? '/padres/' + padre._id : '/padres' %>
+<form action="<%= accion %>" method="POST">
+  <div class="form-card" style="margin-bottom:16px">
+    <div class="form-seccion-titulo">Datos Personales</div>
+    <div class="form-grid">
+      <div class="campo"><label>Nombre(s) <span class="req">*</span></label><input type="text" name="nombre" value="<%= padre.nombre||'' %>" required></div>
+      <div class="campo"><label>Apellido(s) <span class="req">*</span></label><input type="text" name="apellido" value="<%= padre.apellido||'' %>" required></div>
+      <div class="campo"><label>Número de Identidad</label><input type="text" name="numIdentidad" value="<%= padre.numIdentidad||'' %>" placeholder="0000-0000-00000"></div>
+      <div class="campo"><label>Parentesco</label>
+        <select name="parentesco">
+          <option value="padre" <%= (padre.parentesco||'padre')==='padre'?'selected':'' %>>Padre</option>
+          <option value="madre" <%= padre.parentesco==='madre'?'selected':'' %>>Madre</option>
+          <option value="tutor" <%= padre.parentesco==='tutor'?'selected':'' %>>Tutor Legal</option>
+          <option value="otro"  <%= padre.parentesco==='otro' ?'selected':'' %>>Otro</option>
+        </select>
+      </div>
+      <div class="campo"><label>Ocupación</label><input type="text" name="ocupacion" value="<%= padre.ocupacion||'' %>"></div>
+    </div>
+  </div>
+  <div class="form-card" style="margin-bottom:16px">
+    <div class="form-seccion-titulo">Contacto</div>
+    <div class="form-grid">
+      <div class="campo"><label>Teléfono</label><input type="text" name="telefono" value="<%= padre.telefono||'' %>" placeholder="9999-9999"></div>
+      <div class="campo"><label>Correo Electrónico</label><input type="email" name="correo" value="<%= padre.correo||'' %>" placeholder="correo@ejemplo.com"></div>
+      <div class="campo campo-ancho"><label>Dirección</label><input type="text" name="direccion" value="<%= padre.direccion||'' %>"></div>
+    </div>
+  </div>
+  <% if (esEditar && padre.hijos && padre.hijos.length) { %>
+  <div class="form-card" style="margin-bottom:16px;background:var(--gray-50)">
+    <div class="form-seccion-titulo">Estudiantes vinculados</div>
+    <p class="campo-hint" style="margin-bottom:10px">La relación con los estudiantes se establece desde el módulo de Matrículas, al matricular o editar la matrícula de cada alumno.</p>
+    <% padre.hijos.forEach(function(h) { %>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:white;border:1px solid var(--gray-200);border-radius:20px;padding:5px 12px;margin:0 6px 6px 0;font-size:12.5px">
+      <%= h.apellido %>, <%= h.nombre %> <code style="font-size:11px"><%= h.expediente %></code>
+    </div>
+    <% }) %>
+  </div>
+  <% } %>
+  <% if (!esEditar) { %>
+  <div class="form-card" style="margin-bottom:16px">
+    <div class="form-seccion-titulo">Acceso al Sistema</div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:10px">
+      <input type="checkbox" name="crearUsuario" id="chkUsuario" onchange="document.getElementById('avisoAcceso').style.display=this.checked?'flex':'none'">
+      Crear cuenta de acceso para este padre (podrá ver mensajes y el progreso de sus hijos)
+    </label>
+    <div id="avisoAcceso" style="display:none;align-items:flex-start;gap:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;font-size:12.5px;color:#1e40af">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span>El sistema generará una contraseña segura automáticamente. Después de guardar, podrás verla en pantalla con el botón "Ver contraseña" en la ficha de este padre, para copiarla y entregársela tú mismo.</span>
+    </div>
+  </div>
+  <% } %>
+  <div class="form-botones">
+    <a href="/padres" class="btn btn-secundario">Cancelar</a>
+    <button type="submit" class="btn btn-primario"><%= esEditar?'Guardar Cambios':'Registrar Padre/Encargado' %></button>
+  </div>
+</form>
+<%- include('../partials/layout_fin') %>

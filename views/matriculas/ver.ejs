@@ -1,0 +1,80 @@
+<% locals.paginaActual = 'matriculas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <h1 class="page-titulo">Detalle de Matrícula</h1>
+  <div style="display:flex;gap:8px">
+    <a href="/matriculas/<%= matricula._id %>/editar" class="btn btn-secundario">Editar</a>
+    <a href="/matriculas" class="btn btn-outline">Volver</a>
+  </div>
+</div>
+
+<div class="detalle-card">
+  <div class="detalle-header" style="background:linear-gradient(135deg,#1e1b4b,#4338ca)">
+    <div class="detalle-avatar" style="background:#6366f1;font-size:22px"></div>
+    <div>
+      <h2 class="detalle-nombre"><code style="color:#a5b4fc"><%= matricula.numMatricula %></code></h2>
+      <p style="color:rgba(255,255,255,.75);margin:4px 0">
+        <%= matricula.alumno?.apellido %>, <%= matricula.alumno?.nombre %>
+      </p>
+      <span class="badge badge-<%= matricula.estado==='activa'?'verde':matricula.estado==='anulada'?'rojo':'amarillo' %>">
+        <%= matricula.estado %>
+      </span>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:11px;color:rgba(255,255,255,.55)">Año Escolar</div>
+      <div style="font-size:26px;font-weight:800;color:white"><%= matricula.anioEscolar %></div>
+    </div>
+  </div>
+
+  <div class="detalle-grid">
+    <div class="detalle-sec">
+      <h3>Alumno</h3>
+      <div class="dato-fila"><span>Nombre</span><strong><%= matricula.alumno?.apellido %>, <%= matricula.alumno?.nombre %></strong></div>
+      <div class="dato-fila"><span>Expediente</span><strong><code><%= matricula.alumno?.expediente %></code></strong></div>
+    </div>
+    <div class="detalle-sec">
+      <h3>Sección Asignada</h3>
+      <div class="dato-fila"><span>Sección</span><strong>Sec. <%= matricula.seccion?.nombre||'—' %></strong></div>
+      <div class="dato-fila"><span>Grado</span><strong><%= matricula.seccion?.grado?.nombre||'—' %></strong></div>
+      <div class="dato-fila"><span>Carrera</span><strong><%= matricula.seccion?.grado?.carrera?.nombre||'—' %></strong></div>
+      <div class="dato-fila"><span>Docente Tutor</span>
+        <strong><%= matricula.seccion?.docente ? `${matricula.seccion.docente.apellido}, ${matricula.seccion.docente.nombre}` : '—' %></strong>
+      </div>
+      <div class="dato-fila"><span>Jornada</span><strong><%= matricula.seccion?.jornada||'—' %></strong></div>
+    </div>
+    <div class="detalle-sec">
+      <h3>Información de Matrícula</h3>
+      <div class="dato-fila"><span>Fecha</span>
+        <strong><%= matricula.fechaMatricula ? new Date(matricula.fechaMatricula).toLocaleDateString('es-HN') : '—' %></strong>
+      </div>
+      <div class="dato-fila"><span>Estado</span><strong><%= matricula.estado %></strong></div>
+      <% if (matricula.observaciones) { %>
+      <div class="dato-fila"><span>Observaciones</span><strong><%= matricula.observaciones %></strong></div>
+      <% } %>
+    </div>
+    <div class="detalle-sec">
+      <h3>Padre / Madre / Encargado</h3>
+      <% if (matricula.padre) { %>
+      <div class="dato-fila"><span>Nombre</span><strong><%= matricula.padre.apellido %>, <%= matricula.padre.nombre %></strong></div>
+      <div class="dato-fila"><span>Parentesco</span><strong style="text-transform:capitalize"><%= matricula.padre.parentesco %></strong></div>
+      <div class="dato-fila"><span>Teléfono</span><strong><%= matricula.padre.telefono||'—' %></strong></div>
+      <div class="dato-fila"><span>Correo</span><strong><%= matricula.padre.correo||'—' %></strong></div>
+      <div class="dato-fila"><span>Acceso al sistema</span><strong><%= matricula.padre.usuario ? 'Sí tiene cuenta' : 'Sin cuenta' %></strong></div>
+      <a href="/padres/<%= matricula.padre._id %>" style="font-size:12px;color:var(--primary)">Ver/gestionar acceso de este encargado →</a>
+      <% } else { %>
+      <p style="color:var(--gray-400);font-size:13px">Sin encargado vinculado. <a href="/matriculas/<%= matricula._id %>/editar">Asignar uno</a></p>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="detalle-footer">
+    <form action="/matriculas/<%= matricula._id %>/eliminar" method="POST"
+          onsubmit="return confirm('¿Eliminar esta matrícula permanentemente?')">
+      <button type="submit" class="btn btn-peligro">Eliminar Matrícula</button>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/layout_fin') %>

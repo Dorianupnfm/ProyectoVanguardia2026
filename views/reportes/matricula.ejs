@@ -1,0 +1,38 @@
+<% locals.paginaActual = 'reportes' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Reporte de Matrículas <%= anio %></h1></div>
+  <div class="page-acciones">
+    <button onclick="window.print()" class="btn btn-secundario">Imprimir</button>
+    <a href="/reportes" class="btn btn-outline">Volver</a>
+  </div>
+</div>
+<div class="stats-grid" style="margin-bottom:20px">
+  <div class="stat-card"><div class="stat-icono si-azul"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+    <div><div class="stat-num"><%= totalGeneral %></div><div class="stat-lbl">Total matrículas</div></div>
+  </div>
+  <div class="stat-card"><div class="stat-icono si-verde"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div><div class="stat-num"><%= activasGeneral %></div><div class="stat-lbl">Matrículas activas</div></div>
+  </div>
+</div>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Grado</th><th>Carrera</th><th>Secciones</th><th>Total Alumnos</th><th>Activos</th></tr></thead>
+  <tbody>
+  <% datos.forEach(function(d) { %>
+  <tr>
+    <td><strong><%= d.grado.nombre %></strong></td>
+    <td><%= d.grado.carrera ? d.grado.carrera.nombre : 'Ciclo Básico' %></td>
+    <td style="text-align:center"><%= d.secciones %></td>
+    <td style="text-align:center;font-weight:700"><%= d.total %></td>
+    <td style="text-align:center"><span class="badge badge-verde"><%= d.activas %></span></td>
+  </tr>
+  <% }) %>
+  <tr style="background:var(--gray-50);font-weight:700">
+    <td colspan="3">TOTAL GENERAL</td>
+    <td style="text-align:center"><%= totalGeneral %></td>
+    <td style="text-align:center"><%= activasGeneral %></td>
+  </tr>
+  </tbody>
+</table></div>
+<%- include('../partials/layout_fin') %>

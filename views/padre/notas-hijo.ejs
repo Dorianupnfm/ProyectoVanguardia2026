@@ -1,0 +1,77 @@
+<% locals.paginaActual = 'portal-padre' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Progreso Académico</h1>
+    <p class="page-sub"><%= alumno.nombre %> <%= alumno.apellido %> &mdash; <%= matricula?.seccion?.grado?.nombre %> Sección <%= matricula?.seccion?.nombre %></p>
+  </div>
+  <a href="/portal-padre/hijo/<%= alumno._id %>" class="btn btn-outline">Volver</a>
+</div>
+
+<% if (!resumenPorAsignatura.length) { %>
+<div class="vacio"><p>Sin asignaturas o notas registradas aún.</p></div>
+<% } else { %>
+
+<% resumenPorAsignatura.forEach(function(r) { %>
+<div class="tabla-card" style="margin-bottom:18px">
+  <div class="tabla-card-header">
+    <div>
+      <span class="tabla-card-titulo"><%= r.asignatura.nombre %></span>
+      <% if (r.asignatura.docente) { %>
+      <span style="font-size:12px;color:var(--gray-500);margin-left:10px">
+        Docente: <%= r.asignatura.docente.nombre %> <%= r.asignatura.docente.apellido %>
+      </span>
+      <% } %>
+    </div>
+    <% if (r.promedioGeneral !== null) { %>
+    <span class="badge badge-<%= r.aprobado ? 'verde' : 'rojo' %>" style="font-size:13px;padding:6px 14px">
+      Promedio: <%= r.promedioGeneral %>%
+    </span>
+    <% } %>
+  </div>
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Parcial</th>
+        <th style="text-align:center">Nota Final</th>
+        <th style="text-align:center">Estado</th>
+        <th>Barra de progreso</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% r.porParcial.forEach(function(pp) { %>
+    <tr>
+      <td>
+        <strong><%= pp.parcial.nombre %></strong>
+        <span class="badge badge-<%= pp.parcial.estado==='activo'?'verde':pp.parcial.estado==='cerrado'?'gris':'amarillo' %>" style="margin-left:6px;font-size:10px"><%= pp.parcial.estado %></span>
+      </td>
+      <td style="text-align:center;font-size:16px;font-weight:700;color:<%= pp.notaFinal===null ? 'var(--gray-300)' : pp.aprobado ? 'var(--success)' : 'var(--danger)' %>">
+        <%= pp.notaFinal !== null ? pp.notaFinal + '%' : '—' %>
+      </td>
+      <td style="text-align:center">
+        <% if (pp.notaFinal !== null) { %>
+        <span class="badge badge-<%= pp.aprobado ? 'verde' : 'rojo' %>"><%= pp.aprobado ? 'Aprobado' : 'Reprobado' %></span>
+        <% } else { %>
+        <span class="badge badge-gris">Pendiente</span>
+        <% } %>
+      </td>
+      <td style="min-width:160px;padding:8px 16px">
+        <% if (pp.notaFinal !== null) { %>
+        <div style="background:var(--gray-100);border-radius:20px;height:10px;overflow:hidden">
+          <div style="height:100%;border-radius:20px;width:<%= Math.min(pp.notaFinal, 100) %>%;background:<%= pp.aprobado ? 'var(--success)' : 'var(--danger)' %>;transition:width .4s"></div>
+        </div>
+        <span style="font-size:10.5px;color:var(--gray-400);margin-top:3px;display:block">Mínimo: <%= notaMinima %>%</span>
+        <% } else { %>
+        <span style="font-size:12px;color:var(--gray-300)">Sin calificaciones registradas</span>
+        <% } %>
+      </td>
+    </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<% }) %>
+
+<% } %>
+<%- include('../partials/layout_fin') %>

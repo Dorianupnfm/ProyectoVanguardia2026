@@ -1,0 +1,124 @@
+<% locals.paginaActual = 'padres' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <h1 class="page-titulo">Detalle del Padre/Encargado</h1>
+  <div class="page-acciones">
+    <a href="/padres/<%= padre._id %>/editar" class="btn btn-secundario">Editar</a>
+    <a href="/padres" class="btn btn-outline">Volver</a>
+  </div>
+</div>
+<div class="detalle-card">
+  <div class="detalle-header">
+    <div class="detalle-avatar"><%= padre.nombre[0] %><%= padre.apellido[0] %></div>
+    <div>
+      <h2 class="detalle-nombre"><%= padre.apellido %>, <%= padre.nombre %></h2>
+      <div class="detalle-sub" style="text-transform:capitalize"><%= padre.parentesco %></div>
+    </div>
+  </div>
+  <div class="detalle-grid">
+    <div class="detalle-sec">
+      <h3>Contacto</h3>
+      <div class="dato-fila"><span>Teléfono</span><strong><%= padre.telefono||'—' %></strong></div>
+      <div class="dato-fila"><span>Correo</span><strong><%= padre.correo||'—' %></strong></div>
+      <div class="dato-fila"><span>Dirección</span><strong><%= padre.direccion||'—' %></strong></div>
+      <div class="dato-fila"><span>Ocupación</span><strong><%= padre.ocupacion||'—' %></strong></div>
+    </div>
+    <div class="detalle-sec">
+      <h3>Acceso al Sistema</h3>
+      <div class="dato-fila"><span>Estado</span><strong><%= padre.usuario ? 'Tiene cuenta activa' : 'Sin cuenta de acceso' %></strong></div>
+      <% if (padre.usuario) { %>
+      <div class="dato-fila"><span>Correo de acceso</span><strong><%= padre.usuario.email %></strong></div>
+
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <% if (['director','administrativo'].includes(usuarioActual.rol)) { %>
+        <button type="button" class="btn btn-sm btn-primario" onclick="verPassword()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Ver contraseña
+        </button>
+        <% } %>
+        <form action="/padres/<%= padre._id %>/generar-acceso" method="POST"
+              onsubmit="return confirm('¿Generar una nueva contraseña para este padre? La contraseña anterior dejará de funcionar.')">
+          <button type="submit" class="btn btn-sm btn-secundario">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:13px;height:13px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Generar nueva clave
+          </button>
+        </form>
+      </div>
+      <% if (!['director','administrativo'].includes(usuarioActual.rol)) { %>
+      <p style="color:var(--gray-400);font-size:11.5px;margin-top:8px">Solo Director o Administrativo pueden ver la contraseña actual.</p>
+      <% } %>
+
+      <!-- Modal de contraseña -->
+      <% if (['director','administrativo'].includes(usuarioActual.rol)) { %>
+      <div id="modalPassword" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)cerrarModal()">
+        <div style="background:white;border-radius:12px;padding:28px;max-width:380px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.3)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:20px;height:20px;color:var(--primary)"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <h3 style="font-size:16px;font-weight:700;color:var(--gray-900)">Contraseña de <%= padre.nombre %> <%= padre.apellido %></h3>
+          </div>
+          <p style="font-size:12.5px;color:var(--gray-500);margin-bottom:18px">
+            Usuario: <strong><%= padre.usuario.email %></strong><br>
+            Cópiala y entrégasela directamente al padre/encargado.
+          </p>
+          <div id="modalContenido" style="background:var(--gray-50);border:1.5px dashed var(--gray-300);border-radius:8px;padding:16px;text-align:center;margin-bottom:18px;min-height:50px;display:flex;align-items:center;justify-content:center">
+            <span style="color:var(--gray-400);font-size:13px">Cargando...</span>
+          </div>
+          <button onclick="cerrarModal()" class="btn btn-secundario btn-block">Cerrar</button>
+        </div>
+      </div>
+
+      <script>
+      function verPassword() {
+        document.getElementById('modalContenido').innerHTML = '<span style="color:var(--gray-400);font-size:13px">Cargando...</span>';
+        document.getElementById('modalPassword').style.display = 'flex';
+
+        fetch('/usuarios/<%= padre.usuario._id %>/ver-password')
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.password) {
+              document.getElementById('modalContenido').innerHTML =
+                '<code style="font-size:20px;font-weight:700;color:var(--gray-900);letter-spacing:1px">' + data.password + '</code>';
+            } else {
+              document.getElementById('modalContenido').innerHTML =
+                '<span style="color:var(--gray-500);font-size:13px">No disponible. Usa "Generar nueva clave".</span>';
+            }
+          })
+          .catch(function() {
+            document.getElementById('modalContenido').innerHTML =
+              '<span style="color:var(--danger);font-size:13px">Error al consultar la contraseña.</span>';
+          });
+      }
+      function cerrarModal() {
+        document.getElementById('modalPassword').style.display = 'none';
+      }
+      </script>
+      <% } %>
+
+      <% } else if (padre.correo) { %>
+      <form action="/padres/<%= padre._id %>/generar-acceso" method="POST" style="margin-top:10px"
+            onsubmit="return confirm('¿Crear acceso al sistema para este padre?')">
+        <button type="submit" class="btn btn-sm btn-secundario">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:13px;height:13px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Crear acceso al sistema
+        </button>
+      </form>
+      <% } else { %>
+      <p style="color:var(--gray-400);font-size:12px;margin-top:8px">Agrega un correo electrónico en "Editar" para poder crear su acceso.</p>
+      <% } %>
+    </div>
+    <div class="detalle-sec" style="grid-column:1/-1">
+      <h3>Estudiantes a su cargo</h3>
+      <% if (!matriculas.length) { %>
+      <p style="color:var(--gray-400);font-size:13px">Sin estudiantes vinculados todavía. La vinculación se hace desde Matrículas.</p>
+      <% } %>
+      <% matriculas.forEach(function(m) { %>
+      <div class="dato-fila">
+        <span><%= m.alumno.apellido %>, <%= m.alumno.nombre %> — <%= m.seccion && m.seccion.grado ? m.seccion.grado.nombre + ' Sec. ' + m.seccion.nombre : '' %></span>
+        <strong><code><%= m.alumno.expediente %></code></strong>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+<%- include('../partials/layout_fin') %>

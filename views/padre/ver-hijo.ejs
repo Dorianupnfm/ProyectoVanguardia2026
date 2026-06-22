@@ -1,0 +1,59 @@
+<% locals.paginaActual = 'portal-padre' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo"><%= alumno.nombre %> <%= alumno.apellido %></h1>
+    <p class="page-sub"><%= alumno.expediente %></p>
+  </div>
+  <div class="page-acciones">
+    <a href="/portal-padre/hijo/<%= alumno._id %>/notas" class="btn btn-primario">Ver Notas</a>
+    <a href="/portal-padre" class="btn btn-outline">Volver</a>
+  </div>
+</div>
+
+<% if (matricula) { %>
+<div class="detalle-card" style="margin-bottom:20px">
+  <div class="detalle-header">
+    <div class="detalle-avatar"><%= alumno.nombre[0] %><%= alumno.apellido[0] %></div>
+    <div>
+      <h2 class="detalle-nombre"><%= matricula.seccion.grado.nombre %></h2>
+      <div class="detalle-sub">Sección <%= matricula.seccion.nombre %> &mdash; Jornada <%= matricula.seccion.jornada %></div>
+    </div>
+  </div>
+  <div class="detalle-grid">
+    <div class="detalle-sec">
+      <h3>Información Académica</h3>
+      <div class="dato-fila"><span>Docente Tutor</span><strong><%= matricula.seccion.docente ? matricula.seccion.docente.apellido+', '+matricula.seccion.docente.nombre : '—' %></strong></div>
+      <div class="dato-fila"><span>Año Lectivo</span><strong><%= matricula.anioEscolar %></strong></div>
+      <div class="dato-fila"><span>Estado de Matrícula</span><strong><%= matricula.estado %></strong></div>
+    </div>
+    <% if (asistenciaResumen) { %>
+    <div class="detalle-sec">
+      <h3>Resumen de Asistencia Reciente</h3>
+      <div class="dato-fila"><span>Presentes</span><strong style="color:var(--success)"><%= asistenciaResumen.presentes %></strong></div>
+      <div class="dato-fila"><span>Ausentes</span><strong style="color:var(--danger)"><%= asistenciaResumen.ausentes %></strong></div>
+      <div class="dato-fila"><span>Tarde</span><strong style="color:var(--warning)"><%= asistenciaResumen.tarde %></strong></div>
+      <div class="dato-fila"><span>Excusas</span><strong style="color:var(--primary)"><%= asistenciaResumen.excusa %></strong></div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<div class="tabla-card">
+  <div class="tabla-card-header"><span class="tabla-card-titulo">Asignaturas</span></div>
+  <table class="tabla">
+    <thead><tr><th>Asignatura</th><th>Docente</th></tr></thead>
+    <tbody>
+    <% asignaturas.forEach(function(a) { %>
+    <tr><td><strong><%= a.nombre %></strong></td><td style="font-size:12.5px"><%= (a.docente && a.docente.nombre) ? (a.docente.nombre + ' ' + (a.docente.apellido||'')) : '—' %></td></tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } else { %>
+<div class="vacio"><p>Sin matrícula activa registrada.</p></div>
+<% } %>
+
+<%- include('../partials/layout_fin') %>

@@ -1,0 +1,46 @@
+<% locals.paginaActual = 'mensajeria' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Mensajes</h1><p class="page-sub"><%= conversaciones.length %> conversación(es)</p></div>
+  <a href="/mensajeria/nueva" class="btn btn-primario">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+    Nuevo Mensaje
+  </a>
+</div>
+
+<% if (!conversaciones.length) { %>
+<div class="vacio">
+  <div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+  <div class="vacio-titulo">Sin mensajes</div>
+  <p>Inicia una conversación con un docente, padre de familia o miembro del personal.</p>
+  <a href="/mensajeria/nueva" class="btn btn-primario">Escribir mensaje</a>
+</div>
+<% } else { %>
+<div class="tabla-card">
+  <% conversaciones.forEach(function(c) { %>
+  <%
+    var otro = c.participantes.find(function(p){ return p._id.toString() !== usuarioActual.id.toString(); });
+  %>
+  <a href="/mensajeria/<%= c._id %>" style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--gray-100);text-decoration:none;color:inherit;transition:background .12s"
+     onmouseover="this.style.background='var(--primary-bg)'" onmouseout="this.style.background='white'">
+    <div class="detalle-avatar" style="width:42px;height:42px;font-size:14px;flex-shrink:0;background:var(--primary)">
+      <%= otro ? otro.nombre.charAt(0).toUpperCase() : '?' %>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <strong style="font-size:14px;color:var(--gray-900)"><%= otro ? otro.nombre : 'Conversación' %></strong>
+        <span style="font-size:11px;color:var(--gray-400)"><%= new Date(c.ultimaFecha).toLocaleDateString('es-HN') %></span>
+      </div>
+      <div style="font-size:12.5px;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        <%= c.ultimoMensaje || 'Sin mensajes' %>
+      </div>
+      <% if (c.alumnoRelacionado) { %>
+      <span class="badge badge-azul" style="margin-top:4px">Sobre: <%= c.alumnoRelacionado.nombre %> <%= c.alumnoRelacionado.apellido %></span>
+      <% } %>
+    </div>
+  </a>
+  <% }) %>
+</div>
+<% } %>
+<%- include('../partials/layout_fin') %>

@@ -1,0 +1,60 @@
+<% locals.paginaActual = 'configuracion' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Configuración Institucional</h1>
+  <p class="page-sub">Datos del centro — aparecen en boletas y reportes</p></div>
+</div>
+<form action="/configuracion/guardar" method="POST">
+  <div class="form-card" style="margin-bottom:16px">
+    <div class="form-seccion-titulo">Datos del Centro Educativo</div>
+    <div class="form-grid">
+      <div class="campo campo-ancho">
+        <label>Nombre de la Institución <span class="req">*</span></label>
+        <input type="text" name="inst_nombre" value="<%= cfg.inst_nombre %>" required placeholder="Instituto Nacional...">
+      </div>
+      <div class="campo campo-ancho">
+        <label>Dirección</label>
+        <input type="text" name="inst_direccion" value="<%= cfg.inst_direccion %>" placeholder="Col./Barrio, Municipio, Departamento">
+      </div>
+      <div class="campo">
+        <label>Teléfono</label>
+        <input type="text" name="inst_telefono" value="<%= cfg.inst_telefono %>" placeholder="(504) 2222-3333">
+      </div>
+      <div class="campo">
+        <label>Correo Electrónico</label>
+        <input type="email" name="inst_email" value="<%= cfg.inst_email %>" placeholder="info@instituto.edu.hn">
+      </div>
+      <div class="campo">
+        <label>Código SACE</label>
+        <input type="text" name="inst_codigo" value="<%= cfg.inst_codigo %>" placeholder="01-01-00001">
+      </div>
+      <div class="campo">
+        <label>Modalidad Educativa</label>
+        <input type="text" name="inst_modalidad" value="<%= cfg.inst_modalidad %>" placeholder="Educación Secundaria">
+      </div>
+    </div>
+  </div>
+  <div class="form-card" style="margin-bottom:24px">
+    <div class="form-seccion-titulo">Parámetros Académicos</div>
+    <div class="form-grid">
+      <div class="campo">
+        <label>Año Lectivo Activo</label>
+        <input type="number" name="anio_lectivo" value="<%= cfg.anio_lectivo %>" min="2000" max="2099">
+      </div>
+      <div class="campo">
+        <label>Nota Mínima de Aprobación (%)</label>
+        <input type="number" name="nota_minima" value="<%= cfg.nota_minima %>" min="1" max="100">
+        <span class="campo-hint">Porcentaje mínimo para aprobar</span>
+      </div>
+    </div>
+  </div>
+  <div class="form-botones">
+    <a href="/dashboard" class="btn btn-secundario">Cancelar</a>
+    <button type="submit" class="btn btn-primario">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13"/></svg>
+      Guardar Configuración
+    </button>
+  </div>
+</form>
+<%- include('../partials/layout_fin') %>

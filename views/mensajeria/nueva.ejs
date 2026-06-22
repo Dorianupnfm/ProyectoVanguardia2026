@@ -1,0 +1,116 @@
+<% locals.paginaActual = 'mensajeria' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header"><h1 class="page-titulo">Nuevo Mensaje</h1><a href="/mensajeria" class="btn btn-outline">Volver</a></div>
+
+<div class="form-card" style="max-width:560px">
+  <div class="form-seccion-titulo">Redactar Mensaje</div>
+  <form action="/mensajeria/nueva" method="POST" enctype="multipart/form-data">
+    <div class="form-grid">
+      <div class="campo campo-ancho">
+        <label>Destinatario <span class="req">*</span></label>
+        <!-- Búsqueda por nombre con autocomplete -->
+        <div style="position:relative;margin-bottom:6px">
+          <input type="text" id="buscarDestinatario" placeholder="Buscar por nombre..."
+                 autocomplete="off"
+                 style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius);font-size:14px"
+                 oninput="filtrarDestinatarios(this.value)">
+          <div id="listaDestinatarios" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--primary);border-top:none;border-radius:0 0 8px 8px;max-height:220px;overflow-y:auto;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.12)"></div>
+        </div>
+        <input type="hidden" name="destinatarioId" id="destinatarioId" required>
+        <span id="destinatarioSeleccionado" style="font-size:12px;color:var(--success);display:none">✓ Destinatario seleccionado</span>
+      </div>
+      <% if (hijos && hijos.length) { %>
+      <div class="campo campo-ancho">
+        <label>Sobre el estudiante (opcional)</label>
+        <select name="alumnoId">
+          <option value="">No especificar</option>
+          <% hijos.forEach(function(h) { %>
+          <option value="<%= h._id %>"><%= h.nombre %> <%= h.apellido %></option>
+          <% }) %>
+        </select>
+      </div>
+      <% } %>
+      <div class="campo campo-ancho">
+        <label>Asunto</label>
+        <input type="text" name="asunto" placeholder="Ej: Consulta sobre asistencia">
+      </div>
+      <div class="campo campo-ancho">
+        <label>Mensaje <span class="req">*</span></label>
+        <textarea name="contenido" rows="5" placeholder="Escribe tu mensaje aquí..." required></textarea>
+      </div>
+      <div class="campo campo-ancho">
+        <label>Adjunto (opcional)</label>
+        <input type="file" name="adjunto" id="adjuntoInput"
+               accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+               style="font-size:13px;padding:6px 0">
+        <span class="campo-hint">Imagen o documento (máx. 5 MB)</span>
+        <div id="adjuntoPreview" style="display:none;margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="form-botones">
+      <a href="/mensajeria" class="btn btn-secundario">Cancelar</a>
+      <button type="submit" class="btn btn-primario">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Enviar Mensaje
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+var CONTACTOS = <%- JSON.stringify((contactos||[]).map(function(c){ return { id: c._id, nombre: c.nombre, rol: ROL_LABELS[c.rol]||c.rol }; })) %>;
+
+function filtrarDestinatarios(q) {
+  var lista = document.getElementById('listaDestinatarios');
+  var termino = q.trim().toLowerCase();
+  if (!termino) { lista.style.display = 'none'; return; }
+  var filtrados = CONTACTOS.filter(function(c){ return c.nombre.toLowerCase().includes(termino); }).slice(0, 10);
+  if (!filtrados.length) { lista.style.display = 'none'; return; }
+  lista.innerHTML = filtrados.map(function(c){
+    return '<div onclick="seleccionarDestinatario(\''+ c.id +'\',\''+ c.nombre.replace(/'/g,"\\'") +'\')" style="padding:9px 14px;cursor:pointer;font-size:13.5px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center">'
+      + '<strong>'+ c.nombre +'</strong>'
+      + '<span style="font-size:11px;color:var(--gray-400)">'+ c.rol +'</span>'
+      + '</div>';
+  }).join('');
+  lista.style.display = 'block';
+}
+
+function seleccionarDestinatario(id, nombre) {
+  document.getElementById('buscarDestinatario').value = nombre;
+  document.getElementById('destinatarioId').value = id;
+  document.getElementById('listaDestinatarios').style.display = 'none';
+  document.getElementById('destinatarioSeleccionado').style.display = 'block';
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#buscarDestinatario') && !e.target.closest('#listaDestinatarios')) {
+    document.getElementById('listaDestinatarios').style.display = 'none';
+  }
+});
+
+// Vista previa del adjunto
+document.getElementById('adjuntoInput').addEventListener('change', function() {
+  var prev = document.getElementById('adjuntoPreview');
+  var file = this.files[0];
+  if (!file) { prev.style.display = 'none'; return; }
+  if (file.size > 5 * 1024 * 1024) {
+    alert('El archivo excede 5 MB. Por favor elige un archivo más pequeño.');
+    this.value = ''; prev.style.display = 'none'; return;
+  }
+  prev.style.display = 'block';
+  if (file.type.startsWith('image/')) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      prev.innerHTML = '<img src="'+ e.target.result +'" style="max-width:100%;max-height:180px;border-radius:6px;border:1px solid var(--gray-200)">';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    prev.innerHTML = '<div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:8px">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:18px;height:18px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+      + file.name + ' <span style="color:var(--gray-400);font-size:11px">('+ (file.size/1024).toFixed(0) +' KB)</span>'
+      + '</div>';
+  }
+});
+</script>
+<%- include('../partials/layout_fin') %>

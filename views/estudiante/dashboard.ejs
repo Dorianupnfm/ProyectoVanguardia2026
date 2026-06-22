@@ -1,0 +1,44 @@
+<% locals.paginaActual = 'portal-estudiante' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Mi Portal</h1>
+    <p class="page-sub">Bienvenido(a), <%= alumno.nombre %> <%= alumno.apellido %></p>
+  </div>
+</div>
+
+<% if (matricula) { %>
+<div class="stats-grid" style="margin-bottom:24px">
+  <div class="stat-card">
+    <div class="stat-icono si-azul"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+    <div><div class="stat-num" style="font-size:18px"><%= matricula.seccion.grado.nombre %></div><div class="stat-lbl">Grado actual</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icono si-verde"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
+    <div><div class="stat-num" style="font-size:18px">Sección <%= matricula.seccion.nombre %></div><div class="stat-lbl">Jornada <%= matricula.seccion.jornada %></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icono si-morado"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/></svg></div>
+    <div><div class="stat-num"><%= asignaturas.length %></div><div class="stat-lbl">Asignaturas</div></div>
+  </div>
+</div>
+
+<div class="section-label">Accesos Rápidos</div>
+<div class="accesos-grid" style="margin-bottom:24px">
+  <a href="/portal-estudiante/notas" class="acceso-card">
+    <div class="acceso-icono"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/></svg></div>
+    Mis Notas
+  </a>
+  <a href="/portal-estudiante/asistencia" class="acceso-card">
+    <div class="acceso-icono"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg></div>
+    Mi Asistencia
+  </a>
+</div>
+
+<% } else { %>
+<div class="vacio"><p>Sin matrícula activa registrada.</p></div>
+<% } %>
+
+<%- include('../partials/layout_fin') %>

@@ -1,0 +1,29 @@
+<% locals.paginaActual = 'portal-estudiante' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <h1 class="page-titulo">Mis Notas</h1>
+  <a href="/portal-estudiante" class="btn btn-outline">Volver</a>
+</div>
+<% if (!resumen.length) { %>
+<div class="vacio"><p>Sin notas registradas aún.</p></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Asignatura</th><th style="text-align:center">Puntos</th><th style="text-align:center">Máximo</th><th style="text-align:center">%</th><th style="text-align:center">Estado</th></tr></thead>
+  <tbody>
+  <% resumen.forEach(function(r) { %>
+  <tr>
+    <td><strong><%= r.asignatura.nombre %></strong></td>
+    <td style="text-align:center"><%= r.total %></td>
+    <td style="text-align:center"><%= r.posible %></td>
+    <td style="text-align:center;font-weight:700"><%= r.pct!==null?r.pct+'%':'—' %></td>
+    <td style="text-align:center">
+      <% if (r.pct!==null) { %><span class="badge badge-<%= r.pct>=60?'verde':'rojo' %>"><%= r.pct>=60?'Aprobado':'Reprobado' %></span>
+      <% } else { %><span class="badge badge-gris">Sin notas</span><% } %>
+    </td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/layout_fin') %>

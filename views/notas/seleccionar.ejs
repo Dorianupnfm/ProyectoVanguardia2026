@@ -1,0 +1,94 @@
+<% locals.paginaActual = 'notas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Registro de Notas</h1><p class="page-sub">Selecciona año, parcial, asignatura y sección para cargar el libro de calificaciones</p></div>
+</div>
+
+<div class="form-card" style="max-width:760px">
+  <div class="form-seccion-titulo">Filtros de Carga</div>
+  <form action="/notas/libro" method="GET" id="frmNotas">
+    <div class="form-grid">
+
+      <div class="campo">
+        <label>Año Lectivo</label>
+        <input type="number" name="anio" value="<%= anio %>" min="2000" max="2099" style="background:var(--gray-50)">
+      </div>
+
+      <div class="campo">
+        <label>Parcial <span class="req">*</span></label>
+        <select name="parcialId" required>
+          <option value="">Seleccionar...</option>
+          <% parciales.forEach(function(p) { %>
+          <option value="<%= p._id %>" <%= parcialId===p._id.toString()?'selected':'' %>>
+            <%= p.nombre %><% if(p.estado==='activo'){ %> — Activo<% } %>
+          </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="campo campo-ancho">
+        <label>Asignatura <span class="req">*</span></label>
+        <select name="asignaturaId" id="selAsig" required onchange="cargarSecciones(this.value)">
+          <option value="">Seleccionar asignatura...</option>
+          <% asignaturas.forEach(function(a) { %>
+          <option value="<%= a._id %>" <%= asignaturaId===a._id.toString()?'selected':'' %>>
+            <%= a.nombre %> — <%= a.grado ? a.grado.nombre : '' %><% if(a.grado && a.grado.nivel==='bachillerato' && a.grado.carrera){ %> (<%= a.grado.carrera.nombre %>)<% } %>
+          </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label>Sección <span class="req">*</span></label>
+        <select name="seccionId" id="selSec" required onchange="actualizarJornada(this)">
+          <option value="">Seleccionar...</option>
+          <% secciones.forEach(function(s) { %>
+          <option value="<%= s._id %>" data-jornada="<%= s.jornada %>" <%= seccionId===s._id.toString()?'selected':'' %>>Sección <%= s.nombre %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label>Jornada</label>
+        <input type="text" id="campoJornada" value="" disabled style="background:var(--gray-50);text-transform:capitalize" placeholder="Según sección">
+      </div>
+
+    </div>
+    <div class="form-botones">
+      <a href="/dashboard" class="btn btn-secundario">Cancelar</a>
+      <button type="submit" class="btn btn-primario">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Cargar
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+function cargarSecciones(asigId) {
+  var sel = document.getElementById('selSec');
+  var jf  = document.getElementById('campoJornada');
+  if (!asigId) { sel.innerHTML = '<option value="">Seleccionar...</option>'; if(jf) jf.value=''; return; }
+  sel.innerHTML = '<option value="">Cargando...</option>';
+  fetch('/notas/api/secciones/' + asigId)
+    .then(function(r){ return r.json(); })
+    .then(function(list){
+      sel.innerHTML = '<option value="">Seleccionar...</option>' +
+        list.map(function(s){ return '<option value="'+s._id+'" data-jornada="'+s.jornada+'">Sección '+s.nombre+'</option>'; }).join('');
+      if (jf) jf.value = '';
+    });
+}
+function actualizarJornada(sel) {
+  var jf  = document.getElementById('campoJornada');
+  var opt = sel.options[sel.selectedIndex];
+  if (jf) jf.value = (opt && opt.dataset.jornada) ? opt.dataset.jornada : '';
+}
+window.addEventListener('DOMContentLoaded', function() {
+  var sel = document.getElementById('selAsig');
+  if (sel.value) cargarSecciones(sel.value);
+  var selSec = document.getElementById('selSec');
+  if (selSec.value) actualizarJornada(selSec);
+});
+</script>
+<%- include('../partials/layout_fin') %>

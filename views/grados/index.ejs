@@ -1,0 +1,193 @@
+<% locals.paginaActual = 'grados' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-titulo">Grados</h1>
+    <p class="page-sub"><%= grados.length %> grado(s) registrado(s)</p>
+  </div>
+  <a href="/grados/nuevo" class="btn btn-primario">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Nuevo Grado
+  </a>
+</div>
+
+<% if (!grados.length) { %>
+<div class="vacio">
+  <div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+  <div class="vacio-titulo">Sin grados registrados</div>
+  <p>Comienza creando los grados del centro educativo.</p>
+  <a href="/grados/nuevo" class="btn btn-primario">Crear primer grado</a>
+</div>
+
+<% } else { %>
+
+<!-- ══ CICLO BÁSICO ════════════════════════════════════════════════ -->
+<% if (cicloBasico.length) { %>
+<div class="nivel-bloque">
+  <div class="nivel-header nivel-basico">
+    <div class="nivel-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    </div>
+    <div>
+      <div class="nivel-titulo">Ciclo Básico</div>
+      <div class="nivel-sub">7°, 8° y 9° Grado &mdash; Plan común para todos los estudiantes</div>
+    </div>
+    <span class="badge badge-azul" style="margin-left:auto"><%= cicloBasico.length %> grado(s)</span>
+  </div>
+  <div class="grados-grid">
+    <% cicloBasico.forEach(function(g) { %>
+    <div class="grado-card grado-basico">
+      <div class="grado-card-header">
+        <div class="grado-numero"><%= g.nombre %></div>
+        <span class="badge badge-<%= g.estado==='activo'?'verde':'rojo' %>"><%= g.estado %></span>
+      </div>
+      <div class="grado-card-info">
+        <div class="grado-dato">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Año <%= g.anioEscolar %>
+        </div>
+        <div class="grado-dato">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Plan común
+        </div>
+      </div>
+      <div class="grado-card-acciones">
+        <a href="/grados/<%= g._id %>/ver" class="btn btn-sm btn-primario">Ver detalle</a>
+        <a href="/grados/<%= g._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+        <form action="/grados/<%= g._id %>/eliminar" method="POST" style="display:inline"
+              onsubmit="return confirm('¿Eliminar este grado?')">
+          <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger)">Eliminar</button>
+        </form>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>
+<% } %>
+
+<!-- ══ BACHILLERATO ════════════════════════════════════════════════ -->
+<% if (bachillerato.length) { %>
+<%
+  // Agrupar bachillerato por carrera
+  var porCarrera = {};
+  bachillerato.forEach(function(g) {
+    var key   = g.carrera ? g.carrera._id.toString() : 'sin-carrera';
+    var label = g.carrera ? g.carrera.nombre : 'Sin carrera asignada';
+    if (!porCarrera[key]) porCarrera[key] = { nombre: label, grados: [] };
+    porCarrera[key].grados.push(g);
+  });
+%>
+<div class="nivel-bloque" style="margin-top:24px">
+  <div class="nivel-header nivel-bach">
+    <div class="nivel-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+    </div>
+    <div>
+      <div class="nivel-titulo">Bachillerato</div>
+      <div class="nivel-sub">10°, 11° y 12° Grado &mdash; El alumno elige una carrera técnica o académica</div>
+    </div>
+    <span class="badge badge-morado" style="margin-left:auto"><%= bachillerato.length %> grado(s)</span>
+  </div>
+
+  <% Object.values(porCarrera).forEach(function(grupo) { %>
+  <div class="carrera-grupo">
+    <div class="carrera-grupo-titulo">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+      <%= grupo.nombre %>
+    </div>
+    <div class="grados-grid">
+      <% grupo.grados.forEach(function(g) { %>
+      <div class="grado-card grado-bach">
+        <div class="grado-card-header">
+          <div class="grado-numero"><%= g.nombre %></div>
+          <span class="badge badge-<%= g.estado==='activo'?'verde':'rojo' %>"><%= g.estado %></span>
+        </div>
+        <div class="grado-card-info">
+          <div class="grado-dato">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Año <%= g.anioEscolar %>
+          </div>
+          <div class="grado-dato" style="color:var(--purple)">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            <%= g.carrera ? g.carrera.codigo||g.carrera.nombre.substring(0,12) : 'Sin carrera' %>
+          </div>
+        </div>
+        <div class="grado-card-acciones">
+          <a href="/grados/<%= g._id %>/ver" class="btn btn-sm btn-primario">Ver detalle</a>
+          <a href="/grados/<%= g._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+          <form action="/grados/<%= g._id %>/eliminar" method="POST" style="display:inline"
+                onsubmit="return confirm('¿Eliminar este grado?')">
+            <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger)">Eliminar</button>
+          </form>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+  <% }) %>
+</div>
+<% } %>
+
+<% } %>
+
+<style>
+.nivel-bloque { margin-bottom: 8px; }
+.nivel-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border: 1px solid var(--gray-200); border-bottom: none;
+}
+.nivel-basico { background: linear-gradient(90deg, #eff6ff, #f0fdf4); }
+.nivel-bach   { background: linear-gradient(90deg, #f5f3ff, #fdf4ff); }
+.nivel-icon {
+  width: 40px; height: 40px; border-radius: var(--radius);
+  background: white; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: var(--shadow-sm);
+}
+.nivel-icon svg { width: 20px; height: 20px; stroke: var(--primary); }
+.nivel-bach .nivel-icon svg { stroke: var(--purple); }
+.nivel-titulo { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+.nivel-sub    { font-size: 12.5px; color: var(--gray-500); margin-top: 2px; }
+
+.grados-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px; padding: 16px;
+  background: white; border: 1px solid var(--gray-200);
+  border-top: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.carrera-grupo { padding: 0 16px 16px; background: white; border: 1px solid var(--gray-200); border-top: none; }
+.carrera-grupo:last-child { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+.carrera-grupo-titulo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; color: var(--purple);
+  text-transform: uppercase; letter-spacing: .08em;
+  padding: 12px 0 10px;
+  border-bottom: 1px solid var(--gray-100); margin-bottom: 12px;
+}
+.carrera-grupo-titulo svg { width: 14px; height: 14px; stroke: var(--purple); }
+.carrera-grupo .grados-grid { padding: 0; background: none; border: none; border-radius: 0; }
+
+.grado-card {
+  background: var(--gray-50); border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius); padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: box-shadow .15s, border-color .15s;
+}
+.grado-card:hover { box-shadow: var(--shadow-md); border-color: var(--gray-300); }
+.grado-basico:hover { border-color: var(--primary); }
+.grado-bach:hover   { border-color: var(--purple); }
+
+.grado-card-header { display: flex; align-items: center; justify-content: space-between; }
+.grado-numero { font-size: 20px; font-weight: 800; color: var(--gray-900); }
+.grado-card-info { display: flex; flex-direction: column; gap: 5px; }
+.grado-dato {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: var(--gray-500);
+}
+.grado-dato svg { width: 13px; height: 13px; stroke: currentColor; flex-shrink: 0; }
+.grado-card-acciones { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+</style>
+
+<%- include('../partials/layout_fin') %>

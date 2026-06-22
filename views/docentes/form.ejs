@@ -1,0 +1,39 @@
+<% locals.paginaActual = 'docentes' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <h1 class="page-titulo"><%= titulo %></h1>
+  <a href="/docentes" class="btn btn-outline">← Volver</a>
+</div>
+<% var accion = esEditar ? '/docentes/' + docente._id : '/docentes' %>
+<form action="<%= accion %>" method="POST">
+  <div class="form-card">
+    <div class="form-seccion-titulo">Datos Personales</div>
+    <div class="form-grid">
+      <div class="campo"><label>Nombre(s) *</label><input type="text" name="nombre" value="<%= docente.nombre||'' %>" required></div>
+      <div class="campo"><label>Apellido(s) *</label><input type="text" name="apellido" value="<%= docente.apellido||'' %>" required></div>
+      <div class="campo"><label>Número de Identidad</label><input type="text" name="numIdentidad" value="<%= docente.numIdentidad||'' %>" placeholder="0000-0000-00000"></div>
+      <div class="campo"><label>Fecha de Ingreso</label><input type="date" name="fechaIngreso" value="<%= docente.fechaIngreso ? docente.fechaIngreso.toISOString().split('T')[0] : '' %>"></div>
+    </div>
+  </div>
+  <div class="form-card">
+    <div class="form-seccion-titulo">Contacto y Profesión</div>
+    <div class="form-grid">
+      <div class="campo"><label>Correo</label><input type="email" name="correo" value="<%= docente.correo||'' %>" placeholder="correo@ejemplo.com"></div>
+      <div class="campo"><label>Teléfono</label><input type="text" name="telefono" value="<%= docente.telefono||'' %>" placeholder="9999-9999"></div>
+      <div class="campo"><label>Especialidad</label><input type="text" name="especialidad" value="<%= docente.especialidad||'' %>" placeholder="Ej: Matemáticas"></div>
+      <div class="campo"><label>Título Académico</label><input type="text" name="titulo" value="<%= docente.titulo||'' %>" placeholder="Ej: Profesor de Educación Media"></div>
+      <div class="campo"><label>Estado</label>
+        <select name="estado">
+          <option value="activo" <%= (docente.estado||'activo')==='activo'?'selected':'' %>>Activo</option>
+          <option value="inactivo" <%= docente.estado==='inactivo'?'selected':'' %>>Inactivo</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="form-botones">
+    <a href="/docentes" class="btn btn-outline">Cancelar</a>
+    <button type="submit" class="btn btn-primario"><%= esEditar ? 'Guardar Cambios' : 'Registrar Docente' %></button>
+  </div>
+</form>
+<%- include('../partials/layout_fin') %>

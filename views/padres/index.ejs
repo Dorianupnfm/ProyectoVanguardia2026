@@ -1,0 +1,116 @@
+<% locals.paginaActual = 'padres' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Padres de Familia</h1><p class="page-sub"><%= padres.length %> registro(s)</p></div>
+  <a href="/padres/nuevo" class="btn btn-primario">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Nuevo Padre/Encargado
+  </a>
+</div>
+<form action="/padres" method="GET" class="form-busqueda">
+  <input type="text" name="q" value="<%= busqueda %>" placeholder="Buscar por nombre..." class="input-busqueda">
+  <button type="submit" class="btn btn-secundario">Buscar</button>
+</form>
+<% if (!padres.length) { %>
+<div class="vacio"><div class="vacio-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><p>Sin padres registrados.</p></div>
+<% } else { %>
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Nombre</th><th>Parentesco</th><th>Hijos matriculados</th><th>Teléfono</th><th>Acceso</th><th>Acciones</th></tr></thead>
+  <tbody>
+  <% padres.forEach(function(p) { %>
+  <tr>
+    <td><strong><%= p.apellido %>, <%= p.nombre %></strong></td>
+    <td><span class="badge badge-azul" style="text-transform:capitalize"><%= p.parentesco %></span></td>
+    <td style="font-size:12.5px">
+      <% if (p.totalHijos > 0) { %>
+        <span class="badge badge-verde"><%= p.totalHijos %> estudiante<%= p.totalHijos > 1 ? 's' : '' %></span>
+      <% } else { %>
+        <span style="color:var(--gray-400)">Sin vincular</span>
+      <% } %>
+    </td>
+    <td><%= p.telefono||'—' %></td>
+    <td>
+      <% if (p.usuario) { %>
+        <span class="badge badge-verde">Con acceso</span>
+      <% } else { %>
+        <span class="badge badge-gris">Sin acceso</span>
+      <% } %>
+    </td>
+    <td class="acciones">
+      <a href="/padres/<%= p._id %>" class="btn btn-sm btn-outline">Ver</a>
+      <a href="/padres/<%= p._id %>/editar" class="btn btn-sm btn-secundario">Editar</a>
+      <% if (p.usuario && ['director','administrativo'].includes(usuarioActual.rol)) { %>
+      <button type="button" class="btn btn-sm btn-ghost"
+              onclick="verPassword('<%= p.usuario %>', '<%= p.nombre.replace(/'/g, "\\'") %>')"
+              title="Ver contraseña actual">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Ver clave
+      </button>
+      <% } %>
+      <% if (p.correo) { %>
+      <form action="/padres/<%= p._id %>/generar-acceso" method="POST" style="display:inline"
+            onsubmit="return confirm('<%= p.usuario ? '¿Generar una nueva contraseña para '+p.nombre+'?' : '¿Crear acceso al sistema para '+p.nombre+'?' %>')">
+        <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--primary)" title="<%= p.usuario ? 'Generar nueva contraseña' : 'Crear acceso al sistema' %>">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:13px;height:13px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <%= p.usuario ? 'Nueva clave' : 'Crear acceso' %>
+        </button>
+      </form>
+      <% } %>
+      <form action="/padres/<%= p._id %>/eliminar" method="POST" style="display:inline" onsubmit="return confirm('¿Eliminar?')">
+        <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger)">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+
+<!-- Modal de contraseña (reutiliza el endpoint de Usuarios) -->
+<% if (['director','administrativo'].includes(usuarioActual.rol)) { %>
+<div id="modalPassword" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)cerrarModal()">
+  <div style="background:white;border-radius:12px;padding:28px;max-width:380px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:20px;height:20px;color:var(--primary)"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      <h3 style="font-size:16px;font-weight:700;color:var(--gray-900)">Contraseña de <span id="modalNombre"></span></h3>
+    </div>
+    <p style="font-size:12.5px;color:var(--gray-500);margin-bottom:18px">Cópiala y entrégasela directamente al padre/encargado.</p>
+
+    <div id="modalContenido" style="background:var(--gray-50);border:1.5px dashed var(--gray-300);border-radius:8px;padding:16px;text-align:center;margin-bottom:18px;min-height:50px;display:flex;align-items:center;justify-content:center">
+      <span style="color:var(--gray-400);font-size:13px">Cargando...</span>
+    </div>
+
+    <button onclick="cerrarModal()" class="btn btn-secundario btn-block">Cerrar</button>
+  </div>
+</div>
+
+<script>
+function verPassword(usuarioId, nombre) {
+  document.getElementById('modalNombre').textContent = nombre;
+  document.getElementById('modalContenido').innerHTML = '<span style="color:var(--gray-400);font-size:13px">Cargando...</span>';
+  document.getElementById('modalPassword').style.display = 'flex';
+
+  fetch('/usuarios/' + usuarioId + '/ver-password')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.password) {
+        document.getElementById('modalContenido').innerHTML =
+          '<code style="font-size:18px;font-weight:700;color:var(--gray-900);letter-spacing:1px">' + data.password + '</code>';
+      } else {
+        document.getElementById('modalContenido').innerHTML =
+          '<span style="color:var(--gray-500);font-size:13px">No disponible. Usa el botón de generar una clave nueva.</span>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('modalContenido').innerHTML =
+        '<span style="color:var(--danger);font-size:13px">Error al consultar la contraseña.</span>';
+    });
+}
+function cerrarModal() {
+  document.getElementById('modalPassword').style.display = 'none';
+}
+</script>
+<% } %>
+
+<%- include('../partials/layout_fin') %>
