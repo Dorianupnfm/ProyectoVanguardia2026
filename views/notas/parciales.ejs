@@ -1,0 +1,63 @@
+<% locals.paginaActual = 'notas' %>
+<%- include('../partials/layout_inicio') %>
+<%- include('../partials/mensajes') %>
+<div class="page-header">
+  <div><h1 class="page-titulo">Parciales</h1><p class="page-sub">Periodos de evaluación del año lectivo</p></div>
+  <a href="/notas" class="btn btn-outline">Volver a Notas</a>
+</div>
+
+<!-- Formulario nuevo parcial -->
+<div class="form-card" style="margin-bottom:20px">
+  <div class="form-seccion-titulo">Agregar Parcial</div>
+  <form action="/notas/parciales" method="POST">
+    <div class="form-grid">
+      <div class="campo"><label>Nombre <span class="req">*</span></label>
+        <select name="nombre" required>
+          <option value="">Seleccionar...</option>
+          <option value="I Parcial">I Parcial</option>
+          <option value="II Parcial">II Parcial</option>
+          <option value="III Parcial">III Parcial</option>
+          <option value="IV Parcial">IV Parcial</option>
+        </select>
+      </div>
+      <div class="campo"><label>Número</label><input type="number" name="numero" min="1" max="4" placeholder="1,2,3,4" required></div>
+      <div class="campo"><label>Año Escolar <span class="req">*</span></label><input type="number" name="anioEscolar" value="<%= new Date().getFullYear() %>" required></div>
+      <div class="campo"><label>Fecha Inicio</label><input type="date" name="fechaInicio"></div>
+      <div class="campo"><label>Fecha Fin</label><input type="date" name="fechaFin"></div>
+      <div class="campo"><label>Estado</label>
+        <select name="estado">
+          <option value="pendiente">Pendiente</option>
+          <option value="activo">Activo</option>
+          <option value="cerrado">Cerrado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-botones"><button type="submit" class="btn btn-primario">Crear Parcial</button></div>
+  </form>
+</div>
+
+<!-- Listado -->
+<div class="tabla-card"><table class="tabla">
+  <thead><tr><th>Nombre</th><th>Año</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+  <% if (!parciales.length) { %>
+  <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--gray-400)">Sin parciales registrados</td></tr>
+  <% } %>
+  <% parciales.forEach(function(p) { %>
+  <tr>
+    <td><strong><%= p.nombre %></strong></td>
+    <td><%= p.anioEscolar %></td>
+    <td><%= p.fechaInicio ? new Date(p.fechaInicio).toLocaleDateString('es-HN') : '—' %></td>
+    <td><%= p.fechaFin    ? new Date(p.fechaFin).toLocaleDateString('es-HN')    : '—' %></td>
+    <td><span class="badge badge-<%= p.estado==='activo'?'verde':p.estado==='cerrado'?'rojo':'amarillo' %>"><%= p.estado %></span></td>
+    <td class="acciones">
+      <form action="/notas/parciales/<%= p._id %>/eliminar" method="POST" style="display:inline"
+            onsubmit="return confirm('¿Eliminar parcial <%= p.nombre %>?')">
+        <button type="submit" class="btn btn-sm btn-ghost" style="color:var(--danger)">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<%- include('../partials/layout_fin') %>
